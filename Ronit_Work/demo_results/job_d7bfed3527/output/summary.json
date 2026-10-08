@@ -1,0 +1,8 @@
+{
+  "task": "monte_carlo_pi",
+  "total_samples": 3000000,
+  "final_pi_estimate": 3.1439266666666668,
+  "true_pi": 3.141592653589793,
+  "error": 0.0023340130768736422,
+  "duration_seconds": 0.818
+}

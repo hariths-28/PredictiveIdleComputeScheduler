@@ -1,0 +1,15 @@
+{
+  "job_id": "job_be6b6aae4a",
+  "job_name": "WebDemo_PI",
+  "entrypoint": "monte_carlo_pi.py",
+  "args": [],
+  "created_at": 1788028037.715476,
+  "timeout_seconds": 1800,
+  "estimated_runtime_sec": 20,
+  "requirements": null,
+  "env_vars": {},
+  "files": [
+    "monte_carlo_pi.py"
+  ],
+  "user_id": "user_default"
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictive Idle-Compute Scheduler | Live Grid Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="glow-bg glow-1"></div>
+    <div class="glow-bg glow-2"></div>
+
+    <div class="app-container">
+        <!-- Top Navigation / Header -->
+        <header class="navbar">
+            <div class="logo-group">
+                <div class="logo-icon">
+                    <span class="pulse-ring"></span>
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="brand-title">PREDICTIVE IDLE-COMPUTE GRID</h1>
+                    <p class="brand-subtitle">Distributed Peer Compute · ML Oracle Routing · Preemptive Execution Sandbox</p>
+                </div>
+            </div>
+
+            <div class="header-metrics">
+                <div class="metric-badge">
+                    <span class="badge-label">Cluster Status</span>
+                    <span class="badge-value text-emerald"><span class="status-dot online"></span> ONLINE</span>
+                </div>
+                <div class="metric-badge">
+                    <span class="badge-label">Active Nodes</span>
+                    <span class="badge-value" id="stat-active-nodes">4 Laptops</span>
+                </div>
+                <div class="metric-badge">
+                    <span class="badge-label">Idle Capacity</span>
+                    <span class="badge-value text-cyan" id="stat-idle-capacity">75%</span>
+                </div>
+                <div class="metric-badge">
+                    <span class="badge-label">Total Jobs</span>
+                    <span class="badge-value text-purple" id="stat-total-jobs">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content Grid -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Column: Cluster Topology & Interactive Preemption Simulation -->
+            <section class="panel cluster-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <h2>🖥️ Connected Peer Laptops (Cluster Nodes)</h2>
+                        <span class="panel-hint">Role 1: Node Agent & Role 4: ML Oracle</span>
+                    </div>
+                    <span class="live-pill"><span class="pulse-dot"></span> Realtime Telemetry</span>
+                </div>
+
+                <p class="panel-desc">
+                    Each card represents a peer laptop on the local network. Click <strong>"Simulate Host Active"</strong> to test instant preemption when the owner moves their mouse!
+                </p>
+
+                <div class="nodes-grid" id="nodes-container">
+                    <!-- Dynamic Node Cards will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Right Column: Job Launcher & Controls -->
+            <section class="panel launchpad-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <h2>🚀 Job Dispatcher & Launchpad</h2>
+                        <span class="panel-hint">Role 5: Job Packaging & Execution</span>
+                    </div>
+                </div>
+
+                <div class="quick-launch-section">
+                    <label class="section-label">⚡ 1-Click Demo Workload Dispatch:</label>
+                    <div class="demo-buttons-row">
+                        <button class="btn btn-demo" onclick="submitDemoJob('pi')">
+                            <span class="btn-icon">🎯</span>
+                            <div class="btn-text">
+                                <span class="btn-name">Monte Carlo $\pi$</span>
+                                <span class="btn-desc">5M iterations & CSV logs</span>
+                            </div>
+                        </button>
+
+                        <button class="btn btn-demo" onclick="submitDemoJob('matrix')">
+                            <span class="btn-icon">💥</span>
+                            <div class="btn-text">
+                                <span class="btn-name">Matrix Stress Test</span>
+                                <span class="btn-desc">1500x1500 Numpy GFLOPS</span>
+                            </div>
+                        </button>
+
+                        <button class="btn btn-demo" onclick="submitDemoJob('ml')">
+                            <span class="btn-icon">🧠</span>
+                            <div class="btn-text">
+                                <span class="btn-name">Random Forest ML</span>
+                                <span class="btn-desc">50k rows & Model Metrics</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Script Upload -->
+                <div class="upload-section">
+                    <label class="section-label">📁 Or Submit Custom Python Job:</label>
+                    <div class="drop-zone" id="drop-zone">
+                        <input type="file" id="file-input" accept=".py,.zip" style="display:none" onchange="handleFileSelected(event)">
+                        <div class="drop-content" onclick="document.getElementById('file-input').click()">
+                            <span class="upload-icon">📤</span>
+                            <p class="drop-text">Click or Drag & Drop <strong>.py</strong> or <strong>.zip</strong> job bundle</p>
+                            <span class="drop-subtext">Automatically packaged with manifest.json and dispatched</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom Left: Active Execution Pipeline & Jobs History -->
+            <section class="panel jobs-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <h2>📊 Distributed Job Pipeline</h2>
+                        <span class="panel-hint">Role 3: State Manager Tracking</span>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="grid-table">
+                        <thead>
+                            <tr>
+                                <th>Job ID & Name</th>
+                                <th>Assigned Node</th>
+                                <th>Status</th>
+                                <th>Duration</th>
+                                <th>Preempt Pauses</th>
+                                <th>Peak RAM</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobs-table-body">
+                            <tr>
+                                <td colspan="7" class="empty-row">No compute jobs submitted yet. Click a demo button above to launch!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Bottom Right: Live Sandbox Terminal Logs -->
+            <section class="panel console-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <h2>📟 Live Sandbox Output Terminal</h2>
+                        <span class="panel-hint">Real-time stdout/stderr stream</span>
+                    </div>
+                    <div class="console-actions">
+                        <button class="btn-icon-sm" title="Clear Console" onclick="clearConsole()">🧹 Clear</button>
+                    </div>
+                </div>
+
+                <div class="terminal-window">
+                    <div class="terminal-bar">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                        <span class="terminal-title" id="terminal-active-job">Sandbox Process Output</span>
+                    </div>
+                    <pre class="terminal-body" id="terminal-output"><span class="term-system">[GRID DAEMON] Live telemetry WebSocket connected. Waiting for job execution...</span></pre>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span>Predictive Idle-Compute Scheduler · University Innovation Project</span>
+            <span class="footer-tag">Role 5: Executor, Artifact Packaging & Integration UI</span>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

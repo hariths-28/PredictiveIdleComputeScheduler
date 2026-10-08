@@ -1,0 +1,15 @@
+{
+  "job_id": "job_5954fed38e",
+  "job_name": "matrix_stress",
+  "entrypoint": "matrix_stress.py",
+  "args": [],
+  "created_at": 1788027871.71202,
+  "timeout_seconds": 1800,
+  "estimated_runtime_sec": 60,
+  "requirements": null,
+  "env_vars": {},
+  "files": [
+    "matrix_stress.py"
+  ],
+  "user_id": "user_default"
+}

@@ -1,0 +1,2 @@
+SELECT * FROM jobs;
+SELECT * FROM nodes

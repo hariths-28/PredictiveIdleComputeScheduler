@@ -1,0 +1,13 @@
+=== [GRID JOB] Starting Monte Carlo Pi Estimation ===
+Total Samples: 3,000,000 | Checkpoint Every: 600,000 samples
+Process PID: 15740 | Python Interpreter: C:\Users\Ronit Aswani\AppData\Local\Programs\Python\Python313\python.exe
+[  0.07s] Sample:   600,000 | Pi Estimate: 3.142040 | Error: 4.473464e-04
+[  0.24s] Sample: 1,200,000 | Pi Estimate: 3.142643 | Error: 1.050680e-03
+[  0.47s] Sample: 1,800,000 | Pi Estimate: 3.142191 | Error: 5.984575e-04
+[  0.63s] Sample: 2,400,000 | Pi Estimate: 3.141873 | Error: 2.806797e-04
+[  0.79s] Sample: 3,000,000 | Pi Estimate: 3.142201 | Error: 6.086797e-04
+=== COMPLETED in 0.89s ===
+True Pi:     3.1415926536
+Estimate:    3.1422013333
+Final Error: 6.086797e-04
+Artifacts successfully written to 'output\pi_estimate.csv' and 'output\summary.json'

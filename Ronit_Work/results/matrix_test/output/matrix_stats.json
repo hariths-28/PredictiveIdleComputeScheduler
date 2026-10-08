@@ -1,0 +1,33 @@
+{
+  "task": "matrix_stress_test",
+  "matrix_dimension": 1200,
+  "iterations": 3,
+  "total_duration_sec": 1.328,
+  "average_gflops": 222.54,
+  "results": [
+    {
+      "iteration": 1,
+      "matrix_size": 1200,
+      "mult_time_sec": 0.013,
+      "gflops": 265.68,
+      "mean": -0.0339,
+      "std": 34.6365
+    },
+    {
+      "iteration": 2,
+      "matrix_size": 1200,
+      "mult_time_sec": 0.0166,
+      "gflops": 208.42,
+      "mean": 0.0315,
+      "std": 34.6298
+    },
+    {
+      "iteration": 3,
+      "matrix_size": 1200,
+      "mult_time_sec": 0.0179,
+      "gflops": 193.51,
+      "mean": -0.0155,
+      "std": 34.6805
+    }
+  ]
+}

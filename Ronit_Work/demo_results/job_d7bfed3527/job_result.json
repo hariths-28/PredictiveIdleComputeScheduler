@@ -1,0 +1,30 @@
+{
+  "job_id": "job_d7bfed3527",
+  "status": "COMPLETED",
+  "exit_code": 0,
+  "stdout": "=== [GRID JOB] Starting Monte Carlo Pi Estimation ===\nTotal Samples: 3,000,000 | Checkpoint Every: 600,000 samples\nProcess PID: 13652 | Python Interpreter: C:\\Users\\Ronit Aswani\\AppData\\Local\\Programs\\Python\\Python313\\python.exe\n[  0.06s] Sample:   600,000 | Pi Estimate: 3.146140 | Error: 4.547346e-03\n[  0.22s] Sample: 1,200,000 | Pi Estimate: 3.143883 | Error: 2.290680e-03\n[  0.38s] Sample: 1,800,000 | Pi Estimate: 3.143424 | Error: 1.831791e-03\n[  0.54s] Sample: 2,400,000 | Pi Estimate: 3.143460 | Error: 1.867346e-03\n[  0.72s] Sample: 3,000,000 | Pi Estimate: 3.143927 | Error: 2.334013e-03\n=== COMPLETED in 0.82s ===\nTrue Pi:     3.1415926536\nEstimate:    3.1439266667\nFinal Error: 2.334013e-03\nArtifacts successfully written to 'output\\pi_estimate.csv' and 'output\\summary.json'\n",
+  "stderr": "",
+  "metrics": {
+    "start_time": 1788027839.306962,
+    "end_time": 1788027840.3177564,
+    "duration_seconds": 1.0107944011688232,
+    "cpu_percent_samples": [
+      46.8
+    ],
+    "ram_mb_samples": [
+      13.296875
+    ],
+    "peak_cpu_percent": 46.8,
+    "peak_ram_mb": 13.296875,
+    "pause_count": 0,
+    "total_pause_duration_sec": 0.0
+  },
+  "artifact_files": [
+    "output/pi_estimate.csv",
+    "output/summary.json",
+    "logs/stdout.log",
+    "logs/stderr.log"
+  ],
+  "error_message": null,
+  "completed_at": 1788027840.3177884
+}

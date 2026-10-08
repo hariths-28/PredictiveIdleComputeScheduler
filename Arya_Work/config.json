@@ -1,0 +1,9 @@
+{
+  "dispatcher_url": "http://localhost:5000/api/v1/heartbeat",
+  "node_id": null,
+  "heartbeat_interval": 5,
+  "cpu_idle_threshold": 20.0,
+  "ram_idle_threshold": 80.0,
+  "user_inactivity_threshold_sec": 180,
+  "log_level": "INFO"
+}

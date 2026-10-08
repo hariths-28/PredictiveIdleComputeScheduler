@@ -1,0 +1,15 @@
+{
+  "job_id": "job_d7bfed3527",
+  "job_name": "demo_pi",
+  "entrypoint": "monte_carlo_pi.py",
+  "args": [],
+  "created_at": 1788027834.7552168,
+  "timeout_seconds": 1800,
+  "estimated_runtime_sec": 30,
+  "requirements": null,
+  "env_vars": {},
+  "files": [
+    "monte_carlo_pi.py"
+  ],
+  "user_id": "user_default"
+}

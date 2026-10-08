@@ -1,0 +1,26 @@
+=== [GRID JOB] Starting Monte Carlo Pi Estimation ===
+Total Samples: 3,000,000 | Checkpoint Every: 600,000 samples
+Process PID: 16628 | Python Interpreter: C:\Users\Ronit Aswani\AppData\Local\Programs\Python\Python313\python.exe
+[  0.06s] Sample:   600,000 | Pi Estimate: 3.142033 | Error: 4.406797e-04
+[  0.23s] Sample: 1,200,000 | Pi Estimate: 3.140607 | Error: 9.859869e-04
+[  0.42s] Sample: 1,800,000 | Pi Estimate: 3.139649 | Error: 1.943765e-03
+[  0.59s] Sample: 2,400,000 | Pi Estimate: 3.140118 | Error: 1.474320e-03
+[  0.75s] Sample: 3,000,000 | Pi Estimate: 3.140331 | Error: 1.261987e-03
+=== COMPLETED in 0.85s ===
+True Pi:     3.1415926536
+Estimate:    3.1403306667
+Final Error: 1.261987e-03
+Artifacts successfully written to 'output\pi_estimate.csv' and 'output\summary.json'
+=== [GRID JOB] Starting Monte Carlo Pi Estimation ===
+Total Samples: 3,000,000 | Checkpoint Every: 600,000 samples
+Process PID: 13652 | Python Interpreter: C:\Users\Ronit Aswani\AppData\Local\Programs\Python\Python313\python.exe
+[  0.06s] Sample:   600,000 | Pi Estimate: 3.146140 | Error: 4.547346e-03
+[  0.22s] Sample: 1,200,000 | Pi Estimate: 3.143883 | Error: 2.290680e-03
+[  0.38s] Sample: 1,800,000 | Pi Estimate: 3.143424 | Error: 1.831791e-03
+[  0.54s] Sample: 2,400,000 | Pi Estimate: 3.143460 | Error: 1.867346e-03
+[  0.72s] Sample: 3,000,000 | Pi Estimate: 3.143927 | Error: 2.334013e-03
+=== COMPLETED in 0.82s ===
+True Pi:     3.1415926536
+Estimate:    3.1439266667
+Final Error: 2.334013e-03
+Artifacts successfully written to 'output\pi_estimate.csv' and 'output\summary.json'
