@@ -1,0 +1,1 @@
+"""IdleGrid application package."""
