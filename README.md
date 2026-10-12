@@ -40,5 +40,12 @@ gridctl cluster                          # laptops as the coordinator sees them
 gridctl demo-run --type pi               # local pause/resume demo
 ```
 
+## Review 1 demo: real laptops on the dashboard
+1. Coordinator laptop: `idlegrid-dispatcher --host 0.0.0.0` (add `--no-sim` to hide the four simulated laptops).
+2. Every other laptop: `idlegrid-agent --dispatcher http://<coordinator-ip>:8000/api/v1/heartbeat --interval 2`.
+3. Open `http://<coordinator-ip>:8000`. Each real laptop shows up as a **Live laptop** card: HOST ACTIVE while its owner is using it, IDLE (RISKY) when idle, OFFLINE 15 s after its agent stops.
+
+Real laptops are never given jobs yet. That needs the idle predictor (Phase 3) and the real scheduler (Phase 1–2). Jobs still run on the simulated laptops.
+
 ## Contributing
 Feature branch → pull request → CI green (lint + tests on Windows, macOS, Linux) → one teammate's review. Contract changes follow [`docs/contract.md`](docs/contract.md). Never commit secrets: credentials come from `IDLEGRID_*` environment variables.

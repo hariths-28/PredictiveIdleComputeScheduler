@@ -7,7 +7,7 @@ import os
 class NodeConfig:
     def __init__(
         self,
-        dispatcher_url: str = "http://localhost:5000/api/v1/heartbeat",
+        dispatcher_url: str = "http://localhost:8000/api/v1/heartbeat",
         node_id: str = None,
         heartbeat_interval: int = 5,
         cpu_idle_threshold: float = 20.0,
@@ -41,7 +41,7 @@ class NodeConfig:
             data = json.load(f)
 
         return cls(
-            dispatcher_url=data.get("dispatcher_url", "http://localhost:5000/api/v1/heartbeat"),
+            dispatcher_url=data.get("dispatcher_url", "http://localhost:8000/api/v1/heartbeat"),
             node_id=data.get("node_id"),
             heartbeat_interval=data.get("heartbeat_interval", 5),
             cpu_idle_threshold=data.get("cpu_idle_threshold", 20.0),

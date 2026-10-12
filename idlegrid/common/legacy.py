@@ -30,6 +30,8 @@ class NodeTelemetry(BaseModel):
     status: NodeStatus = NodeStatus.IDLE_SAFE
     current_job_id: Optional[str] = None
     timestamp: float = Field(default_factory=time.time)
+    source: str = "simulated"  # "simulated" (mock laptop) or "agent" (real laptop via heartbeat)
+    os_name: Optional[str] = None
 
 
 class NodeInfo(BaseModel):

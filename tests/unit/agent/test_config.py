@@ -8,7 +8,7 @@ from idlegrid.agent.config import NodeConfig
 class TestNodeConfig(unittest.TestCase):
     def test_default_config(self):
         config = NodeConfig()
-        self.assertEqual(config.dispatcher_url, "http://localhost:5000/api/v1/heartbeat")
+        self.assertEqual(config.dispatcher_url, "http://localhost:8000/api/v1/heartbeat")
         self.assertEqual(config.heartbeat_interval, 5)
         self.assertTrue(config.node_id.startswith("node-"))
         self.assertEqual(config.cpu_idle_threshold, 20.0)

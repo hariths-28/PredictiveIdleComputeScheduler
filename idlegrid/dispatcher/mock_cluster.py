@@ -22,7 +22,18 @@ class ClusterOrchestrator:
     and executes jobs across available worker nodes.
     """
 
-    def __init__(self, workspace_root: str = "./workspaces"):
+    # Review 1 demo bridge: real laptops report through Arya's agent heartbeats.
+    # Replaced by the real NodeService + status rules in Phase 1 (PRD H-P1-1, Appendix F.1).
+    OFFLINE_AFTER_SEC = 15.0
+    AGENT_STATE_TO_STATUS = {
+        "USER_ACTIVE": NodeStatus.HOST_ACTIVE,  # current agent vocabulary
+        "ACTIVE": NodeStatus.HOST_ACTIVE,  # contract HostState vocabulary
+        "BUSY": NodeStatus.HOST_BUSY,
+        "IDLE": NodeStatus.IDLE_RISKY,  # no idle prediction until Phase 3, so never IDLE_SAFE
+        "UNKNOWN": NodeStatus.UNSCHEDULABLE,
+    }
+
+    def __init__(self, workspace_root: str = "./workspaces", sim_nodes: bool = True):
         self.workspace_root = Path(workspace_root).resolve()
         self.workspace_root.mkdir(parents=True, exist_ok=True)
 
@@ -35,8 +46,11 @@ class ClusterOrchestrator:
         self._lock = threading.Lock()
         self._running = True
 
+        self._last_seen: Dict[str, float] = {}
+
         # Initialize realistic initial peer laptops for the demo cluster
-        self._init_default_nodes()
+        if sim_nodes:
+            self._init_default_nodes()
 
         # Start telemetry & ML Oracle ticker thread
         self._ticker_thread = threading.Thread(target=self._telemetry_ticker, daemon=True)
@@ -105,7 +119,13 @@ class ClusterOrchestrator:
         """Simulates background heartbeat fluctuations and ML Oracle updates."""
         while self._running:
             with self._lock:
+                now = time.time()
                 for node_id, node in self.nodes.items():
+                    if node.source == "agent":
+                        # Real laptops are never randomised; they only go stale.
+                        if now - self._last_seen.get(node_id, now) > self.OFFLINE_AFTER_SEC:
+                            node.status = NodeStatus.OFFLINE
+                        continue
                     if node.status == NodeStatus.HOST_ACTIVE:
                         node.cpu_percent = round(random.uniform(25.0, 75.0), 1)
                         node.idle_time_seconds = 0
@@ -127,6 +147,51 @@ class ClusterOrchestrator:
 
             time.sleep(2.0)
 
+    def register_heartbeat(self, payload: Dict[str, Any], client_ip: str) -> NodeTelemetry:
+        """Upsert a real laptop from an agent heartbeat (Arya's payload: node_id, hostname, state, metrics)."""
+        m = payload.get("metrics") or {}
+        state = str(payload.get("state") or payload.get("host_state") or "UNKNOWN").upper()
+        total = float(m.get("ram_total_mb") or 0.0)
+        available = float(m.get("ram_available_mb") or 0.0)
+        inactivity = m.get("user_inactivity_sec")
+        node_id = str(payload["node_id"])
+        with self._lock:
+            old = self.nodes.get(node_id)
+            status = self.AGENT_STATE_TO_STATUS.get(state, NodeStatus.UNSCHEDULABLE)
+            if old is not None and old.current_job_id:
+                status = NodeStatus.RUNNING_JOB
+            node = NodeTelemetry(
+                node_id=node_id,
+                hostname=str(payload.get("hostname") or node_id),
+                ip_address=client_ip,
+                cpu_percent=float(m.get("cpu_usage_percent", m.get("cpu_percent", 0.0)) or 0.0),
+                ram_percent=float(m.get("ram_usage_percent", m.get("ram_percent", 0.0)) or 0.0),
+                ram_used_mb=max(0.0, total - available),
+                ram_total_mb=total,
+                idle_time_seconds=float(inactivity) if inactivity is not None else 0.0,
+                is_user_active=status == NodeStatus.HOST_ACTIVE,
+                predicted_idle_window_seconds=0.0,
+                status=status,
+                current_job_id=old.current_job_id if old is not None else None,
+                source="agent",
+                os_name=payload.get("os"),
+            )
+            self.nodes[node_id] = node
+            self._last_seen[node_id] = time.time()
+            return node
+
+    def mark_stale_offline(self, now: Optional[float] = None) -> List[str]:
+        """Mark real laptops OFFLINE when their last heartbeat is older than OFFLINE_AFTER_SEC."""
+        now = time.time() if now is None else now
+        changed = []
+        with self._lock:
+            for node_id, seen in self._last_seen.items():
+                node = self.nodes.get(node_id)
+                if node and now - seen > self.OFFLINE_AFTER_SEC and node.status != NodeStatus.OFFLINE:
+                    node.status = NodeStatus.OFFLINE
+                    changed.append(node_id)
+        return changed
+
     def get_nodes(self) -> List[NodeTelemetry]:
         with self._lock:
             return list(self.nodes.values())
@@ -137,6 +202,8 @@ class ClusterOrchestrator:
             if node_id not in self.nodes:
                 return None
             node = self.nodes[node_id]
+            if node.source == "agent":
+                return node  # real laptops change state only through their own heartbeats
 
             if node.status == NodeStatus.HOST_ACTIVE:
                 # Host went idle -> Safe

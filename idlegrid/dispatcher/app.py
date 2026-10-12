@@ -3,9 +3,21 @@ FastAPI application serving the REST API and the live Web Dashboard UI.
 """
 
 import asyncio
+import os
+import time
 
-from typing import Optional
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect
+from typing import Any, Dict, Optional
+from fastapi import (
+    Body,
+    FastAPI,
+    UploadFile,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,6 +25,7 @@ import uvicorn
 
 from idlegrid.dispatcher.mock_cluster import ClusterOrchestrator
 from idlegrid.packager.bundle import JobPackager
+from idlegrid import __version__
 from idlegrid.common.paths import DASHBOARD_DIR, EXAMPLE_JOBS_DIR
 
 app = FastAPI(title="Predictive Idle-Compute Scheduler", version="1.0.0")
@@ -31,10 +44,38 @@ TEMPLATES_DIR = DASHBOARD_DIR / "templates"
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-orchestrator = ClusterOrchestrator(workspace_root="./workspaces")
+# IDLEGRID_SIM_NODES=0 hides the four simulated laptops (e.g. for a real-laptops-only demo).
+orchestrator = ClusterOrchestrator(
+    workspace_root="./workspaces", sim_nodes=os.environ.get("IDLEGRID_SIM_NODES", "1") != "0"
+)
 
 
 # --- REST API ENDPOINTS ---
+
+
+@app.get("/healthz")
+def healthz():
+    """Liveness check used by the network test (docs/runbook/network.md)."""
+    return {
+        "status": "ok",
+        "service": "idlegrid-dispatcher",
+        "version": __version__,
+        "nodes": len(orchestrator.get_nodes()),
+    }
+
+
+@app.post("/api/v1/heartbeat")
+def agent_heartbeat(request: Request, payload: Dict[str, Any] = Body(...)):
+    """Review 1 demo bridge: register a real laptop from a node-agent heartbeat.
+
+    Accepts the current agent payload (node_id, hostname, state, metrics). Phase 1 replaces this
+    with the full contract Heartbeat / HeartbeatResponse and the database (PRD H-P1-1).
+    """
+    if not payload.get("node_id") or not isinstance(payload.get("metrics"), dict):
+        raise HTTPException(status_code=422, detail="heartbeat needs node_id and a metrics object")
+    client_ip = request.client.host if request.client else "unknown"
+    node = orchestrator.register_heartbeat(payload, client_ip)
+    return {"status": "ok", "node_status": node.status.value, "server_time": time.time()}
 
 
 @app.get("/", response_class=HTMLResponse)

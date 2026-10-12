@@ -60,53 +60,87 @@ function updateSummaryStats(nodes, jobs) {
     document.getElementById("stat-idle-capacity").textContent = `${capacity}%`;
 }
 
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+// Card class, badge class and label for every NodeStatus in the contract.
+const NODE_STATUS_VIEW = {
+    IDLE_SAFE:     { card: "idle-safe",     badge: "badge-idle-safe",     text: "🟢 IDLE (SAFE)" },
+    IDLE_RISKY:    { card: "idle-risky",    badge: "badge-idle-risky",    text: "🟡 IDLE (RISKY)" },
+    HOST_ACTIVE:   { card: "host-active",   badge: "badge-host-active",   text: "🔴 HOST ACTIVE" },
+    HOST_BUSY:     { card: "host-busy",     badge: "badge-host-busy",     text: "🟠 HOST BUSY" },
+    RUNNING_JOB:   { card: "busy",          badge: "badge-busy",          text: "⚡ RUNNING JOB" },
+    DRAINING:      { card: "busy",          badge: "badge-busy",          text: "⏳ DRAINING" },
+    UNSCHEDULABLE: { card: "offline",       badge: "badge-offline",       text: "⛔ UNSCHEDULABLE" },
+    OFFLINE:       { card: "offline",       badge: "badge-offline",       text: "⚫ OFFLINE" },
+};
+
+function oracleHintFor(node) {
+    switch (node.status) {
+        case "IDLE_SAFE":
+            return `🎯 <strong>Safe Bet:</strong> ${Math.round((node.predicted_idle_window_seconds || 0) / 60)} min safe window`;
+        case "IDLE_RISKY":
+            return `🤔 <strong>Idle, not yet trusted:</strong> waiting for the oracle`;
+        case "HOST_ACTIVE":
+            return node.source === "agent"
+                ? `⌨️ <strong>Owner is using this laptop</strong>`
+                : `⚠️ <strong>Host Typing:</strong> Preempted (0m window)`;
+        case "HOST_BUSY":
+            return `🔥 <strong>Owner's own work is using the CPU</strong>`;
+        case "RUNNING_JOB":
+            return `⚙️ Running: <code>${escapeHtml(node.current_job_id || "Job")}</code>`;
+        case "OFFLINE":
+            return `📴 <strong>No heartbeat</strong> in the last 15 s`;
+        default:
+            return `ℹ️ ${escapeHtml(node.status)}`;
+    }
+}
+
 function renderClusterNodes(nodes) {
     const container = document.getElementById("nodes-container");
     if (!container) return;
 
     container.innerHTML = nodes.map(node => {
-        const isSafe = node.status === "IDLE_SAFE";
+        const view = NODE_STATUS_VIEW[node.status] || NODE_STATUS_VIEW.UNSCHEDULABLE;
+        const isAgent = node.source === "agent";
         const isActive = node.status === "HOST_ACTIVE";
-        const isBusy = node.status === "RUNNING_JOB";
+        const cpu = Number(node.cpu_percent) || 0;
+        const ramPct = Number(node.ram_percent) || 0;
+        const ramUsed = Number(node.ram_used_mb) || 0;
+        const ramTotal = Number(node.ram_total_mb) || 0;
+        const subtitle = [node.ip_address, node.os_name].filter(Boolean).map(escapeHtml).join(" · ");
 
-        let cardClass = "idle-safe";
-        let badgeClass = "badge-idle-safe";
-        let statusText = "🟢 IDLE (SAFE)";
-        let oracleHint = `🎯 <strong>Safe Bet:</strong> ${Math.round(node.predicted_idle_window_seconds / 60)} min safe window`;
-
-        if (isActive) {
-            cardClass = "host-active";
-            badgeClass = "badge-host-active";
-            statusText = "🔴 HOST ACTIVE";
-            oracleHint = `⚠️ <strong>Host Typing:</strong> Preempted (0m window)`;
-        } else if (isBusy) {
-            cardClass = "busy";
-            badgeClass = "badge-busy";
-            statusText = "⚡ BUSY COMPUTING";
-            oracleHint = `⚙️ Running: <code>${node.current_job_id || 'Job'}</code>`;
-        }
-
-        const btnText = isActive ? "💤 Host Went Idle" : "🎮 Simulate Host Moved Mouse";
-        const btnIcon = isActive ? "💤" : "🖱️";
+        // Real laptops report their own state, so they get a label instead of the simulate button.
+        const footer = isAgent
+            ? `<div class="node-live-label">📡 Live laptop (real agent)</div>`
+            : `<button class="btn-toggle-host" onclick="toggleHostActivity('${escapeHtml(node.node_id)}')">
+                    ${isActive ? "💤 Host Went Idle" : "🖱️ Simulate Host Moved Mouse"}
+               </button>`;
 
         return `
-            <div class="node-card ${cardClass}">
+            <div class="node-card ${view.card}">
                 <div class="node-top">
                     <div>
-                        <div class="node-name">${node.hostname}</div>
-                        <div class="node-ip">${node.ip_address}</div>
+                        <div class="node-name">${escapeHtml(node.hostname)}</div>
+                        <div class="node-ip">${subtitle}</div>
                     </div>
-                    <span class="node-status-badge ${badgeClass}">${statusText}</span>
+                    <span class="node-status-badge ${view.badge}">${view.text}</span>
                 </div>
 
                 <!-- CPU Metric -->
                 <div class="metric-row">
                     <div class="metric-header">
                         <span>CPU Utilization</span>
-                        <strong>${node.cpu_percent.toFixed(1)}%</strong>
+                        <strong>${cpu.toFixed(1)}%</strong>
                     </div>
                     <div class="bar-bg">
-                        <div class="bar-fill bar-cpu" style="width: ${Math.min(100, Math.max(5, node.cpu_percent))}%"></div>
+                        <div class="bar-fill bar-cpu" style="width: ${Math.min(100, Math.max(5, cpu))}%"></div>
                     </div>
                 </div>
 
@@ -114,23 +148,20 @@ function renderClusterNodes(nodes) {
                 <div class="metric-row">
                     <div class="metric-header">
                         <span>Memory (RAM)</span>
-                        <strong>${(node.ram_used_mb / 1024).toFixed(1)} / ${(node.ram_total_mb / 1024).toFixed(0)} GB</strong>
+                        <strong>${(ramUsed / 1024).toFixed(1)} / ${(ramTotal / 1024).toFixed(0)} GB</strong>
                     </div>
                     <div class="bar-bg">
-                        <div class="bar-fill bar-ram" style="width: ${Math.min(100, Math.max(5, node.ram_percent))}%"></div>
+                        <div class="bar-fill bar-ram" style="width: ${Math.min(100, Math.max(5, ramPct))}%"></div>
                     </div>
                 </div>
 
                 <!-- ML Oracle Prediction -->
                 <div class="oracle-pill">
                     <span class="oracle-icon">🔮</span>
-                    <span class="oracle-text">${oracleHint}</span>
+                    <span class="oracle-text">${oracleHintFor(node)}</span>
                 </div>
 
-                <!-- Preemption Simulation Button -->
-                <button class="btn-toggle-host" onclick="toggleHostActivity('${node.node_id}')">
-                    ${btnIcon} ${btnText}
-                </button>
+                ${footer}
             </div>
         `;
     }).join("");

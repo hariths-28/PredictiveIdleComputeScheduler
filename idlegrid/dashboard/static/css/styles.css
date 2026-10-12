@@ -292,6 +292,16 @@ body {
 .node-card.busy {
     border-left: 4px solid var(--primary);
 }
+.node-card.idle-risky {
+    border-left: 4px solid #facc15;
+}
+.node-card.host-busy {
+    border-left: 4px solid #fb923c;
+}
+.node-card.offline {
+    border-left: 4px solid var(--text-muted);
+    opacity: 0.6;
+}
 
 .node-top {
     display: flex;
@@ -333,6 +343,30 @@ body {
     background: rgba(56, 189, 248, 0.2);
     color: #38bdf8;
     border: 1px solid var(--primary-glow);
+}
+.badge-idle-risky {
+    background: rgba(250, 204, 21, 0.2);
+    color: #facc15;
+    border: 1px solid rgba(250, 204, 21, 0.4);
+}
+.badge-host-busy {
+    background: rgba(251, 146, 60, 0.2);
+    color: #fb923c;
+    border: 1px solid rgba(251, 146, 60, 0.4);
+}
+.badge-offline {
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+.node-live-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
 }
 
 /* Metric Bars */

@@ -1,5 +1,5 @@
 {
-  "dispatcher_url": "http://localhost:5000/api/v1/heartbeat",
+  "dispatcher_url": "http://localhost:8000/api/v1/heartbeat",
   "node_id": null,
   "heartbeat_interval": 5,
   "cpu_idle_threshold": 20.0,
