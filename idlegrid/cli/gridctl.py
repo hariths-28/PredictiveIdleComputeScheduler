@@ -5,13 +5,7 @@ inspect cluster nodes, and download result artifacts.
 """
 
 import sys
-import os
 from pathlib import Path
-
-# Ensure root workspace is on python path
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
 
 # Reconfigure standard output encoding for Windows compatibility
 if sys.platform == "win32":
@@ -33,9 +27,10 @@ from rich.text import Text
 from rich.syntax import Syntax
 from rich import print as rprint
 
-from src.packager.bundle import JobPackager, ResultUnpackager
-from src.executor.runner import JobRunner
-from src.common.models import JobStatus, NodeStatus
+from idlegrid.packager.bundle import JobPackager, ResultUnpackager
+from idlegrid.executor.runner import JobRunner
+from idlegrid.common.legacy import JobStatus, NodeStatus
+from idlegrid.common.paths import EXAMPLE_JOBS_DIR
 
 console = Console(legacy_windows=False)
 DEFAULT_ENDPOINT = "http://localhost:8000"
@@ -314,9 +309,9 @@ def demo_run_cmd(args):
     ))
 
     script_map = {
-        "pi": Path("demo_jobs/monte_carlo_pi.py"),
-        "matrix": Path("demo_jobs/matrix_stress.py"),
-        "ml": Path("demo_jobs/tabular_ml_train.py")
+        "pi": EXAMPLE_JOBS_DIR / "monte_carlo_pi.py",
+        "matrix": EXAMPLE_JOBS_DIR / "matrix_stress.py",
+        "ml": EXAMPLE_JOBS_DIR / "tabular_ml_train.py"
     }
 
     target_script = script_map.get(args.type, script_map["pi"])

@@ -1,7 +1,7 @@
 """
 Packager module for bundling and extracting compute jobs and result artifacts.
 """
-from src.packager.bundle import (
+from idlegrid.packager.bundle import (
     JobPackager,
     JobUnpackager,
     ResultPackager,

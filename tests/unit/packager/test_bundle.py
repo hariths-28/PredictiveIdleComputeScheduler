@@ -7,8 +7,8 @@ import tempfile
 import pytest
 from pathlib import Path
 
-from src.packager.bundle import JobPackager, JobUnpackager, ResultPackager, ResultUnpackager
-from src.common.models import JobStatus, JobResult, ExecutionMetrics
+from idlegrid.packager.bundle import JobPackager, JobUnpackager, ResultPackager, ResultUnpackager
+from idlegrid.common.legacy import JobStatus, JobResult, ExecutionMetrics
 
 
 def test_job_package_and_unpackage():

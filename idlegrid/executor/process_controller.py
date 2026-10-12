@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional, Callable, List, Dict
 import psutil
 
-from src.common.models import JobStatus, ExecutionMetrics
+from idlegrid.common.legacy import JobStatus, ExecutionMetrics
 
 logger = logging.getLogger("GridExecutor.ProcessController")
 

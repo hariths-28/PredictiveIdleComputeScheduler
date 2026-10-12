@@ -11,7 +11,7 @@ import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable
 
-from src.common.models import (
+from idlegrid.common.legacy import (
     NodeTelemetry,
     NodeStatus,
     JobManifest,
@@ -19,8 +19,8 @@ from src.common.models import (
     JobStatus,
     ExecutionMetrics
 )
-from src.executor.runner import JobRunner
-from src.packager.bundle import JobUnpackager, ResultPackager, ResultUnpackager
+from idlegrid.executor.runner import JobRunner
+from idlegrid.packager.bundle import JobUnpackager, ResultPackager, ResultUnpackager
 
 
 class ClusterOrchestrator:

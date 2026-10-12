@@ -2,9 +2,9 @@ import time
 import logging
 import signal
 import sys
-from node_agent.config import NodeConfig
-from node_agent.metrics_collector import MetricsCollector
-from node_agent.heartbeat_sender import HeartbeatSender
+from idlegrid.agent.config import NodeConfig
+from idlegrid.agent.metrics import MetricsCollector
+from idlegrid.agent.client import HeartbeatSender
 
 def setup_logging(log_level_str: str):
     log_level = getattr(logging, log_level_str.upper(), logging.INFO)

@@ -10,9 +10,9 @@ import threading
 from pathlib import Path
 from typing import Optional, Callable, Union, Dict
 
-from src.common.models import JobManifest, JobResult, JobStatus, ExecutionMetrics
-from src.packager.bundle import JobUnpackager, ResultPackager
-from src.executor.process_controller import ProcessController
+from idlegrid.common.legacy import JobManifest, JobResult, JobStatus, ExecutionMetrics
+from idlegrid.packager.bundle import JobUnpackager, ResultPackager
+from idlegrid.executor.process_controller import ProcessController
 
 logger = logging.getLogger("GridExecutor.JobRunner")
 

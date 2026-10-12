@@ -1,7 +1,7 @@
 """
 Common data models and contracts shared across executor, CLI, dispatcher, and agents.
 """
-from src.common.models import (
+from idlegrid.common.legacy import (
     JobStatus,
     NodeStatus,
     JobManifest,

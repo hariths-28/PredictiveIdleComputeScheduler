@@ -1,13 +1,16 @@
+import os
+
 import mysql.connector
 from mysql.connector import Error
 
 # --- CONFIGURATION ---
-# Update this with your actual MySQL password!
+# Credentials come from environment variables, never from source code.
+# (The password that used to be hard-coded here is in git history and must be rotated.)
 DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'amaan', #Not yet able to use with other laptops
-    'database': 'compute_scheduler'
+    'host': os.environ.get('IDLEGRID_DB_HOST', 'localhost'),
+    'user': os.environ.get('IDLEGRID_DB_USER', 'idlegrid'),
+    'password': os.environ.get('IDLEGRID_DB_PASSWORD', ''),
+    'database': os.environ.get('IDLEGRID_DB_NAME', 'compute_scheduler'),
 }
 
 def get_connection():

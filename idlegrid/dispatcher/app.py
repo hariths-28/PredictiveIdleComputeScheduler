@@ -2,17 +2,7 @@
 FastAPI application serving the REST API and the live Web Dashboard UI.
 """
 
-import os
-import sys
-import io
-import json
 import asyncio
-from pathlib import Path
-
-# Ensure root workspace is on python path
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
 
 from typing import Optional, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect
@@ -21,8 +11,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from src.dashboard.mock_cluster import ClusterOrchestrator
-from src.packager.bundle import JobPackager
+from idlegrid.dispatcher.mock_cluster import ClusterOrchestrator
+from idlegrid.packager.bundle import JobPackager
+from idlegrid.common.paths import DASHBOARD_DIR, EXAMPLE_JOBS_DIR
 
 app = FastAPI(title="Predictive Idle-Compute Scheduler", version="1.0.0")
 
@@ -35,12 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BASE_DIR = Path(__file__).resolve().parent
-STATIC_DIR = BASE_DIR / "static"
-TEMPLATES_DIR = BASE_DIR / "templates"
-
-STATIC_DIR.mkdir(parents=True, exist_ok=True)
-TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
+STATIC_DIR = DASHBOARD_DIR / "static"
+TEMPLATES_DIR = DASHBOARD_DIR / "templates"
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
@@ -87,9 +74,9 @@ async def submit_job_bundle(
         bundle_bytes = await bundle.read()
     elif job_type:
         demo_map = {
-            "pi": Path("demo_jobs/monte_carlo_pi.py"),
-            "matrix": Path("demo_jobs/matrix_stress.py"),
-            "ml": Path("demo_jobs/tabular_ml_train.py")
+            "pi": EXAMPLE_JOBS_DIR / "monte_carlo_pi.py",
+            "matrix": EXAMPLE_JOBS_DIR / "matrix_stress.py",
+            "ml": EXAMPLE_JOBS_DIR / "tabular_ml_train.py"
         }
         script_path = demo_map.get(job_type)
         if not script_path or not script_path.exists():

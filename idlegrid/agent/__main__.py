@@ -1,12 +1,7 @@
 import argparse
-import sys
-import os
 
-# Add local directory to path for clean imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from node_agent.config import NodeConfig
-from node_agent.agent import NodeAgent
+from idlegrid.agent.config import NodeConfig
+from idlegrid.agent.agent import NodeAgent
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Predictive Idle-Compute Node Agent (Client Side)")

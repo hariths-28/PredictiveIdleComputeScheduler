@@ -7,7 +7,7 @@ import requests
 import pytest
 from fastapi.testclient import TestClient
 
-from src.dashboard.app import app
+from idlegrid.dispatcher.app import app
 
 
 @pytest.fixture(scope="module")

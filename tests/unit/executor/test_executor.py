@@ -7,9 +7,9 @@ import tempfile
 import pytest
 from pathlib import Path
 
-from src.packager.bundle import JobPackager
-from src.executor.runner import JobRunner
-from src.common.models import JobStatus
+from idlegrid.packager.bundle import JobPackager
+from idlegrid.executor.runner import JobRunner
+from idlegrid.common.legacy import JobStatus
 
 
 def test_job_runner_sync_execution():

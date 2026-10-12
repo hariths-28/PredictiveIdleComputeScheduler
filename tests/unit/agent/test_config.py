@@ -2,7 +2,7 @@ import unittest
 import os
 import json
 import tempfile
-from node_agent.config import NodeConfig
+from idlegrid.agent.config import NodeConfig
 
 class TestNodeConfig(unittest.TestCase):
     def test_default_config(self):

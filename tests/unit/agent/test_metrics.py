@@ -1,7 +1,7 @@
 import unittest
 import sys
-from node_agent.config import NodeConfig
-from node_agent.metrics_collector import MetricsCollector
+from idlegrid.agent.config import NodeConfig
+from idlegrid.agent.metrics import MetricsCollector
 
 class TestMetricsCollector(unittest.TestCase):
     def setUp(self):

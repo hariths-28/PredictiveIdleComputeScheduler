@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import requests
-from node_agent.config import NodeConfig
-from node_agent.heartbeat_sender import HeartbeatSender
+from idlegrid.agent.config import NodeConfig
+from idlegrid.agent.client import HeartbeatSender
 
 class TestHeartbeatSender(unittest.TestCase):
     def setUp(self):
