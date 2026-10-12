@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements/dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - name: No hard-coded secrets
+        run: python scripts/check_secrets.py
+
+  unit:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements/worker-env.txt -r requirements/dispatcher.txt -r requirements/dev.txt
+      - run: pip install -e . --no-deps
+      - run: pytest tests/unit -m "not mysql" -q --cov=idlegrid --cov-report=term
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: idlegrid_test
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      IDLEGRID_DB_URL: mysql+pymysql://root:root@127.0.0.1:3306/idlegrid_test
+      IDLEGRID_OPTUNA_DB_URL: mysql+pymysql://root:root@127.0.0.1:3306/idlegrid_optuna_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements/worker-env.txt -r requirements/dispatcher.txt -r requirements/dev.txt
+      - run: pip install -e . --no-deps
+      - name: Create the Optuna test database
+        run: python -c "import pymysql; c = pymysql.connect(host='127.0.0.1', user='root', password='root'); c.cursor().execute('CREATE DATABASE IF NOT EXISTS idlegrid_optuna_test')"
+      - run: pytest tests -q

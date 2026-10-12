@@ -1,0 +1,1311 @@
+{
+  "enums": {
+    "AttemptStatus": [
+      "ASSIGNED",
+      "RUNNING",
+      "PAUSED",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED",
+      "TIMED_OUT",
+      "MIGRATED",
+      "LOST"
+    ],
+    "CommandType": [
+      "START",
+      "ABORT",
+      "PAUSE",
+      "RESUME"
+    ],
+    "HostState": [
+      "ACTIVE",
+      "BUSY",
+      "IDLE",
+      "UNKNOWN"
+    ],
+    "InputDetection": [
+      "PRECISE",
+      "COARSE",
+      "NONE"
+    ],
+    "JobKind": [
+      "SCRIPT",
+      "HPO_TRIAL"
+    ],
+    "JobStatus": [
+      "QUEUED",
+      "ASSIGNED",
+      "RUNNING",
+      "PAUSED",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED",
+      "TIMED_OUT"
+    ],
+    "NodeStatus": [
+      "OFFLINE",
+      "HOST_ACTIVE",
+      "HOST_BUSY",
+      "IDLE_SAFE",
+      "IDLE_RISKY",
+      "RUNNING_JOB",
+      "DRAINING",
+      "UNSCHEDULABLE"
+    ],
+    "StudyStatus": [
+      "RUNNING",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED"
+    ]
+  },
+  "models": {
+    "AgentRuntimeOverrides": {
+      "heartbeat_interval_sec": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "migrate_after_sec": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "resume_after_idle_sec": {
+        "default": "None",
+        "type": "float | None"
+      }
+    },
+    "AttemptReport": {
+      "active_seconds": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "attempt_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "job_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "manual_pause": {
+        "default": "False",
+        "type": "bool"
+      },
+      "pause_count": {
+        "default": "0",
+        "type": "int"
+      },
+      "paused_since": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "status": {
+        "default": "<required>",
+        "type": "Literal['STARTING', 'RUNNING', 'PAUSED', 'UPLOADING']"
+      }
+    },
+    "AttemptView": {
+      "active_seconds": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "assigned_at": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "attempt_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "attempt_no": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "end_reason": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "ended_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "exit_code": {
+        "default": "None",
+        "type": "int | None"
+      },
+      "hostname": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "job_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "node_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "pause_count": {
+        "default": "0",
+        "type": "int"
+      },
+      "policy_name": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "predicted_q20_sec": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "predicted_q50_sec": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "required_sec": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "started_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "status": {
+        "default": "<required>",
+        "type": "AttemptStatus"
+      },
+      "total_pause_duration_sec": {
+        "default": "0.0",
+        "type": "float"
+      }
+    },
+    "CommandResult": {
+      "command_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "error": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "ok": {
+        "default": "<required>",
+        "type": "bool"
+      }
+    },
+    "ErrorResponse": {
+      "details": {
+        "default": "None",
+        "type": "dict[str, Any] | None"
+      },
+      "error": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "message": {
+        "default": "<required>",
+        "type": "str"
+      }
+    },
+    "ExecutionMetrics": {
+      "active_seconds": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "cpu_percent_samples": {
+        "default": "<factory>",
+        "type": "list[float]"
+      },
+      "duration_seconds": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "end_time": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "pause_count": {
+        "default": "0",
+        "type": "int"
+      },
+      "peak_cpu_percent": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "peak_ram_mb": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "ram_mb_samples": {
+        "default": "<factory>",
+        "type": "list[float]"
+      },
+      "start_time": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "total_pause_duration_sec": {
+        "default": "0.0",
+        "type": "float"
+      }
+    },
+    "ExperimentRunView": {
+      "config": {
+        "default": "<factory>",
+        "type": "dict[str, Any]"
+      },
+      "finished_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "is_active": {
+        "default": "<required>",
+        "type": "bool"
+      },
+      "name": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "notes": {
+        "default": "''",
+        "type": "str"
+      },
+      "policy": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "run_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "started_at": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "summary": {
+        "default": "None",
+        "type": "ExperimentSummary | None"
+      }
+    },
+    "ExperimentSummary": {
+      "goodput": {
+        "default": "<required>",
+        "type": "float | None"
+      },
+      "harvest_ratio": {
+        "default": "<required>",
+        "type": "float | None"
+      },
+      "jobs_completed": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "jobs_total": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "makespan_sec": {
+        "default": "<required>",
+        "type": "float | None"
+      },
+      "mean_jct_sec": {
+        "default": "<required>",
+        "type": "float | None"
+      },
+      "mean_queue_wait_sec": {
+        "default": "<required>",
+        "type": "float | None"
+      },
+      "migrations": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "node_losses": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "preemptions": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "run_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "useful_compute_sec": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "wasted_compute_sec": {
+        "default": "<required>",
+        "type": "float"
+      }
+    },
+    "Heartbeat": {
+      "capabilities": {
+        "default": "<required>",
+        "type": "NodeCapabilities"
+      },
+      "command_results": {
+        "default": "<factory>",
+        "type": "list[CommandResult]"
+      },
+      "current_attempt": {
+        "default": "None",
+        "type": "AttemptReport | None"
+      },
+      "host_state": {
+        "default": "<required>",
+        "type": "HostState"
+      },
+      "hostname": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "metrics": {
+        "default": "<required>",
+        "type": "NodeMetrics"
+      },
+      "node_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "power": {
+        "default": "<required>",
+        "type": "PowerInfo"
+      },
+      "schema_version": {
+        "default": "'1.0'",
+        "type": "str"
+      },
+      "sent_at": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "sharing": {
+        "default": "<required>",
+        "type": "SharingPrefs"
+      }
+    },
+    "HeartbeatResponse": {
+      "commands": {
+        "default": "<factory>",
+        "type": "list[NodeCommand]"
+      },
+      "config_overrides": {
+        "default": "<factory>",
+        "type": "AgentRuntimeOverrides"
+      },
+      "heartbeat_interval_sec": {
+        "default": "5.0",
+        "type": "float"
+      },
+      "node_status": {
+        "default": "<required>",
+        "type": "NodeStatus"
+      },
+      "schema_version": {
+        "default": "'1.0'",
+        "type": "str"
+      },
+      "server_time": {
+        "default": "<required>",
+        "type": "float"
+      }
+    },
+    "HpoTrialRef": {
+      "study_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "trial_number": {
+        "default": "<required>",
+        "type": "int"
+      }
+    },
+    "IdlePrediction": {
+      "elapsed_idle_sec": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "made_at": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "method": {
+        "default": "<required>",
+        "type": "Literal['model', 'heuristic', 'heuristic_global', 'none', 'stale']"
+      },
+      "model_version": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "node_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "q10_sec": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "q20_sec": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "q50_sec": {
+        "default": "<required>",
+        "type": "float"
+      }
+    },
+    "JobManifest": {
+      "args": {
+        "default": "<factory>",
+        "type": "list[str]"
+      },
+      "created_at": {
+        "default": "<factory>",
+        "type": "float"
+      },
+      "entrypoint": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "env_vars": {
+        "default": "<factory>",
+        "type": "dict[str, str]"
+      },
+      "estimated_runtime_sec": {
+        "default": "60",
+        "type": "int"
+      },
+      "files": {
+        "default": "<factory>",
+        "type": "list[str]"
+      },
+      "hpo": {
+        "default": "None",
+        "type": "HpoTrialRef | None"
+      },
+      "job_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "job_name": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "kind": {
+        "default": "'SCRIPT'",
+        "type": "JobKind"
+      },
+      "ram_required_mb": {
+        "default": "1024",
+        "type": "int"
+      },
+      "requirements": {
+        "default": "None",
+        "type": "list[str] | None"
+      },
+      "timeout_seconds": {
+        "default": "3600",
+        "type": "int"
+      },
+      "user_id": {
+        "default": "None",
+        "type": "str | None"
+      }
+    },
+    "JobResult": {
+      "artifact_files": {
+        "default": "<factory>",
+        "type": "list[str]"
+      },
+      "attempt_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "completed_at": {
+        "default": "<factory>",
+        "type": "float"
+      },
+      "error_message": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "exit_code": {
+        "default": "None",
+        "type": "int | None"
+      },
+      "job_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "metrics": {
+        "default": "<factory>",
+        "type": "ExecutionMetrics"
+      },
+      "objective_value": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "status": {
+        "default": "<required>",
+        "type": "JobStatus"
+      },
+      "stderr": {
+        "default": "''",
+        "type": "str"
+      },
+      "stdout": {
+        "default": "''",
+        "type": "str"
+      }
+    },
+    "JobView": {
+      "active_seconds": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "args": {
+        "default": "<factory>",
+        "type": "list[str]"
+      },
+      "artifact_files": {
+        "default": "<factory>",
+        "type": "list[str]"
+      },
+      "assigned_hostname": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "assigned_node_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "attempts": {
+        "default": "None",
+        "type": "list[AttemptView] | None"
+      },
+      "attempts_count": {
+        "default": "0",
+        "type": "int"
+      },
+      "completed_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "created_at": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "duration_seconds": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "entrypoint": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "error_message": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "estimated_runtime_sec": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "exit_code": {
+        "default": "None",
+        "type": "int | None"
+      },
+      "experiment_run_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "job_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "job_name": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "kind": {
+        "default": "<required>",
+        "type": "JobKind"
+      },
+      "objective_value": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "pause_count": {
+        "default": "0",
+        "type": "int"
+      },
+      "peak_cpu_percent": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "peak_ram_mb": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "priority": {
+        "default": "0",
+        "type": "int"
+      },
+      "queued_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "ram_required_mb": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "started_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "status": {
+        "default": "<required>",
+        "type": "JobStatus"
+      },
+      "study_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "timeout_seconds": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "total_pause_duration_sec": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "trial_number": {
+        "default": "None",
+        "type": "int | None"
+      },
+      "user_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "wasted_seconds": {
+        "default": "0.0",
+        "type": "float"
+      }
+    },
+    "LogChunk": {
+      "complete": {
+        "default": "<required>",
+        "type": "bool"
+      },
+      "job_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "next_offset": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "offset": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "text": {
+        "default": "<required>",
+        "type": "str"
+      }
+    },
+    "NodeCapabilities": {
+      "agent_version": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "arch": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "can_prevent_sleep": {
+        "default": "<required>",
+        "type": "bool"
+      },
+      "cpu_count": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "input_method": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "input_precision": {
+        "default": "<required>",
+        "type": "InputDetection"
+      },
+      "max_job_cores": {
+        "default": "None",
+        "type": "int | None"
+      },
+      "os": {
+        "default": "<required>",
+        "type": "Literal['Windows', 'Darwin', 'Linux']"
+      },
+      "os_release": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "perf_score": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "python_version": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "ram_total_mb": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "worker_env_hash": {
+        "default": "<required>",
+        "type": "str"
+      }
+    },
+    "NodeCommand": {
+      "attempt_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "command_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "created_at": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "payload": {
+        "default": "<factory>",
+        "type": "dict[str, Any]"
+      },
+      "type": {
+        "default": "<required>",
+        "type": "CommandType"
+      }
+    },
+    "NodeMetrics": {
+      "cpu_count": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "cpu_percent": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "disk_free_gb": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "host_cpu_percent": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "ram_available_mb": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "ram_percent": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "ram_total_mb": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "user_inactivity_sec": {
+        "default": "<required>",
+        "type": "float | None"
+      }
+    },
+    "NodeView": {
+      "accepting_jobs": {
+        "default": "True",
+        "type": "bool"
+      },
+      "arch": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "available_since": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "current_attempt_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "current_attempt_status": {
+        "default": "None",
+        "type": "AttemptStatus | None"
+      },
+      "current_job_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "first_seen_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "host_state": {
+        "default": "None",
+        "type": "HostState | None"
+      },
+      "hostname": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "input_method": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "input_precision": {
+        "default": "None",
+        "type": "InputDetection | None"
+      },
+      "last_heartbeat_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "metrics": {
+        "default": "None",
+        "type": "NodeMetrics | None"
+      },
+      "node_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "os": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "os_release": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "owner_name": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "owner_user_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "perf_score": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "power": {
+        "default": "None",
+        "type": "PowerInfo | None"
+      },
+      "prediction": {
+        "default": "None",
+        "type": "IdlePrediction | None"
+      },
+      "status": {
+        "default": "<required>",
+        "type": "NodeStatus"
+      }
+    },
+    "ParamSpec": {
+      "choices": {
+        "default": "None",
+        "type": "list[Any] | None"
+      },
+      "high": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "log": {
+        "default": "False",
+        "type": "bool"
+      },
+      "low": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "step": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "type": {
+        "default": "<required>",
+        "type": "Literal['int', 'float', 'categorical']"
+      }
+    },
+    "PowerInfo": {
+      "battery_percent": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "on_ac_power": {
+        "default": "None",
+        "type": "bool | None"
+      }
+    },
+    "SharingPrefs": {
+      "accepting_jobs": {
+        "default": "True",
+        "type": "bool"
+      },
+      "dedicated_mode": {
+        "default": "False",
+        "type": "bool"
+      },
+      "require_ac_power": {
+        "default": "True",
+        "type": "bool"
+      }
+    },
+    "StartJobPayload": {
+      "active_timeout_sec": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "attempt_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "bundle_path": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "bundle_sha256": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "bundle_size": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "job_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "kind": {
+        "default": "<required>",
+        "type": "JobKind"
+      },
+      "manifest": {
+        "default": "<required>",
+        "type": "JobManifest"
+      },
+      "migrate_after_sec": {
+        "default": "<required>",
+        "type": "float"
+      }
+    },
+    "StudySpec": {
+      "direction": {
+        "default": "'maximize'",
+        "type": "Literal['minimize', 'maximize']"
+      },
+      "estimated_trial_runtime_sec": {
+        "default": "240",
+        "type": "int"
+      },
+      "max_parallel": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "n_trials": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "name": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "objective_module": {
+        "default": "'objective'",
+        "type": "str"
+      },
+      "priority": {
+        "default": "0",
+        "type": "int"
+      },
+      "search_space": {
+        "default": "<required>",
+        "type": "dict[str, ParamSpec]"
+      },
+      "seed": {
+        "default": "42",
+        "type": "int | None"
+      },
+      "trial_timeout_sec": {
+        "default": "1800",
+        "type": "int"
+      }
+    },
+    "StudyView": {
+      "asked": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "best_params": {
+        "default": "None",
+        "type": "dict[str, Any] | None"
+      },
+      "best_trial_number": {
+        "default": "None",
+        "type": "int | None"
+      },
+      "best_value": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "completed": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "created_at": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "direction": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "failed": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "finished_at": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "in_flight": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "max_parallel": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "n_trials": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "name": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "sequential_estimate_sec": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "speedup_estimate": {
+        "default": "None",
+        "type": "float | None"
+      },
+      "status": {
+        "default": "<required>",
+        "type": "StudyStatus"
+      },
+      "study_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "trials": {
+        "default": "None",
+        "type": "list[TrialView] | None"
+      },
+      "user_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "wall_time_sec": {
+        "default": "0.0",
+        "type": "float"
+      }
+    },
+    "SuitabilityResult": {
+      "is_suitable": {
+        "default": "<required>",
+        "type": "bool"
+      },
+      "predicted_sec": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "quantile": {
+        "default": "<required>",
+        "type": "Literal['q10', 'q20', 'q50']"
+      },
+      "reason": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "required_sec": {
+        "default": "<required>",
+        "type": "float"
+      }
+    },
+    "TelemetrySnapshot": {
+      "active_experiment_run_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "active_policy": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "jobs": {
+        "default": "<required>",
+        "type": "list[JobView]"
+      },
+      "nodes": {
+        "default": "<required>",
+        "type": "list[NodeView]"
+      },
+      "server_time": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "studies": {
+        "default": "<required>",
+        "type": "list[StudyView]"
+      }
+    },
+    "TrialView": {
+      "active_seconds": {
+        "default": "0.0",
+        "type": "float"
+      },
+      "attempts": {
+        "default": "0",
+        "type": "int"
+      },
+      "job_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "node_id": {
+        "default": "None",
+        "type": "str | None"
+      },
+      "params": {
+        "default": "<factory>",
+        "type": "dict[str, Any]"
+      },
+      "status": {
+        "default": "<required>",
+        "type": "JobStatus"
+      },
+      "trial_number": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "value": {
+        "default": "None",
+        "type": "float | None"
+      }
+    },
+    "UsageBatch": {
+      "node_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "samples": {
+        "default": "<required>",
+        "type": "list[UsageSample]"
+      },
+      "schema_version": {
+        "default": "'1.0'",
+        "type": "str"
+      }
+    },
+    "UsageBatchResponse": {
+      "accepted": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "duplicates": {
+        "default": "<required>",
+        "type": "int"
+      }
+    },
+    "UsageSample": {
+      "agent_version": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "battery_percent": {
+        "default": "<required>",
+        "type": "float | None"
+      },
+      "cpu_percent": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "host_cpu_percent": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "host_state": {
+        "default": "<required>",
+        "type": "HostState"
+      },
+      "input_method": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "input_precision": {
+        "default": "<required>",
+        "type": "InputDetection"
+      },
+      "job_running": {
+        "default": "<required>",
+        "type": "bool"
+      },
+      "node_id": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "on_ac_power": {
+        "default": "<required>",
+        "type": "bool | None"
+      },
+      "ram_percent": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "ts_utc": {
+        "default": "<required>",
+        "type": "float"
+      },
+      "tz_offset_min": {
+        "default": "<required>",
+        "type": "int"
+      },
+      "user_inactivity_sec": {
+        "default": "<required>",
+        "type": "float | None"
+      }
+    },
+    "UserView": {
+      "display_name": {
+        "default": "<required>",
+        "type": "str"
+      },
+      "is_admin": {
+        "default": "<required>",
+        "type": "bool"
+      },
+      "user_id": {
+        "default": "<required>",
+        "type": "str"
+      }
+    }
+  },
+  "schema_version": "1.0"
+}

@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+
+# Runtime output (never commit)
+workspaces/
+results/
+demo_results/
+data/
+*.joblib
+laptop_telemetry.csv
+experiments/results/raw/
+
+# Secrets and local config
+.env
+*.env
+agent.toml
+client.toml
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
