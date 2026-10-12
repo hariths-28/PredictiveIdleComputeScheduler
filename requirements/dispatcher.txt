@@ -1,0 +1,8 @@
+# Coordinator (dispatcher + dashboard) dependencies, pinned.
+fastapi==0.143.0
+pymysql==1.2.3
+python-multipart==0.0.32
+rich==15.0.0
+sqlalchemy==2.1.4
+uvicorn==0.54.0
+websockets==17.2

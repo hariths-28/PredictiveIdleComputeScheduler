@@ -1,0 +1,12 @@
+# Shared, pinned worker environment (PRD decision D6). Every laptop installs exactly this.
+# worker_env_hash = first 16 hex chars of SHA-256 over these sorted, normalised lines.
+# Versions recorded in Phase 0 (October 2026).
+joblib==1.6.0
+numpy==2.5.3
+optuna==5.0.0
+pandas==3.0.6
+psutil==7.2.2
+pydantic==2.14.0
+requests==2.34.2
+scikit-learn==1.9.1
+scipy==1.18.1
