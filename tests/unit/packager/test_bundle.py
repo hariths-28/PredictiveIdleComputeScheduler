@@ -2,9 +2,7 @@
 Unit tests for JobPackager, JobUnpackager, ResultPackager, and ResultUnpackager.
 """
 
-import os
 import tempfile
-import pytest
 from pathlib import Path
 
 from idlegrid.packager.bundle import JobPackager, JobUnpackager, ResultPackager, ResultUnpackager
@@ -17,7 +15,9 @@ def test_job_package_and_unpackage():
 
         # Create a mock entrypoint script
         entrypoint = tmp_path / "mock_train.py"
-        entrypoint.write_text("print('Hello Grid'); open('output/model.txt', 'w').write('trained_weights')", encoding="utf-8")
+        entrypoint.write_text(
+            "print('Hello Grid'); open('output/model.txt', 'w').write('trained_weights')", encoding="utf-8"
+        )
 
         # Create a mock dataset file
         data_file = tmp_path / "dataset.csv"
@@ -29,7 +29,7 @@ def test_job_package_and_unpackage():
             extra_files=[data_file],
             job_name="unit_test_job",
             args=["--epochs", "5"],
-            estimated_runtime_sec=45
+            estimated_runtime_sec=45,
         )
 
         assert len(bundle_bytes) > 0
@@ -64,14 +64,11 @@ def test_result_package_and_unpackage():
             status=JobStatus.COMPLETED,
             exit_code=0,
             stdout="Epoch 1/5 finished\nEpoch 5/5 finished\n",
-            metrics=ExecutionMetrics(duration_seconds=12.5, peak_ram_mb=128.0)
+            metrics=ExecutionMetrics(duration_seconds=12.5, peak_ram_mb=128.0),
         )
 
         # Package results
-        result_bundle_bytes = ResultPackager.create_result_bundle(
-            workspace_dir=ws_dir,
-            job_result=job_result
-        )
+        result_bundle_bytes = ResultPackager.create_result_bundle(workspace_dir=ws_dir, job_result=job_result)
 
         assert len(result_bundle_bytes) > 0
 

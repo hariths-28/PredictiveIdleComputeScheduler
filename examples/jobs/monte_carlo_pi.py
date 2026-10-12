@@ -13,8 +13,9 @@ import csv
 import json
 from pathlib import Path
 
+
 def run_monte_carlo(total_samples: int = 5_000_000, checkpoint_interval: int = 1_000_000):
-    print(f"=== [GRID JOB] Starting Monte Carlo Pi Estimation ===")
+    print("=== [GRID JOB] Starting Monte Carlo Pi Estimation ===")
     print(f"Total Samples: {total_samples:,} | Checkpoint Every: {checkpoint_interval:,} samples")
     print(f"Process PID: {os.getpid()} | Python Interpreter: {sys.executable}")
     sys.stdout.flush()
@@ -40,12 +41,9 @@ def run_monte_carlo(total_samples: int = 5_000_000, checkpoint_interval: int = 1
             print(f"[{elapsed:6.2f}s] Sample: {i:9,d} | Pi Estimate: {current_pi:.6f} | Error: {error:.6e}")
             sys.stdout.flush()
 
-            checkpoints.append({
-                "samples": i,
-                "pi_estimate": current_pi,
-                "error": error,
-                "elapsed_sec": round(elapsed, 3)
-            })
+            checkpoints.append(
+                {"samples": i, "pi_estimate": current_pi, "error": error, "elapsed_sec": round(elapsed, 3)}
+            )
             # Small sleep to simulate sustained background compute without locking CPU 100% instantly
             time.sleep(0.1)
 
@@ -69,17 +67,22 @@ def run_monte_carlo(total_samples: int = 5_000_000, checkpoint_interval: int = 1
     # Write JSON summary
     summary_path = output_dir / "summary.json"
     with open(summary_path, "w", encoding="utf-8") as f:
-        json.dump({
-            "task": "monte_carlo_pi",
-            "total_samples": total_samples,
-            "final_pi_estimate": final_pi,
-            "true_pi": math.pi,
-            "error": final_error,
-            "duration_seconds": round(total_time, 3)
-        }, f, indent=2)
+        json.dump(
+            {
+                "task": "monte_carlo_pi",
+                "total_samples": total_samples,
+                "final_pi_estimate": final_pi,
+                "true_pi": math.pi,
+                "error": final_error,
+                "duration_seconds": round(total_time, 3),
+            },
+            f,
+            indent=2,
+        )
 
     print(f"Artifacts successfully written to '{csv_path}' and '{summary_path}'")
     sys.stdout.flush()
+
 
 if __name__ == "__main__":
     samples = 3_000_000

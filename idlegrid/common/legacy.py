@@ -16,6 +16,7 @@ from idlegrid.common.models import NodeStatus
 
 class NodeTelemetry(BaseModel):
     """Node state as tracked by the prototype dashboard's mock cluster."""
+
     node_id: str
     hostname: str
     ip_address: str
@@ -33,6 +34,7 @@ class NodeTelemetry(BaseModel):
 
 class NodeInfo(BaseModel):
     """Node registration details (prototype)."""
+
     node_id: str
     hostname: str
     ip_address: str
@@ -45,6 +47,7 @@ class NodeInfo(BaseModel):
 
 class JobSubmissionRequest(BaseModel):
     """Client request payload when submitting a job (prototype)."""
+
     job_name: str
     entrypoint: str
     args: List[str] = Field(default_factory=list)

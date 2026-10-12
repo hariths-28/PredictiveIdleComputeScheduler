@@ -1,18 +1,19 @@
 import time
 import logging
 import signal
-import sys
 from idlegrid.agent.config import NodeConfig
 from idlegrid.agent.metrics import MetricsCollector
 from idlegrid.agent.client import HeartbeatSender
+
 
 def setup_logging(log_level_str: str):
     log_level = getattr(logging, log_level_str.upper(), logging.INFO)
     logging.basicConfig(
         level=log_level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
+
 
 class NodeAgent:
     def __init__(self, config: NodeConfig):
@@ -70,4 +71,3 @@ class NodeAgent:
     def _handle_shutdown(self, signum, frame):
         self.logger.info("Received termination signal. Shutting down Node Agent...")
         self.stop()
-

@@ -4,11 +4,11 @@ import requests
 from idlegrid.agent.config import NodeConfig
 from idlegrid.agent.client import HeartbeatSender
 
+
 class TestHeartbeatSender(unittest.TestCase):
     def setUp(self):
         self.config = NodeConfig(
-            dispatcher_url="http://mock-dispatcher.local/api/v1/heartbeat",
-            node_id="test-node-123"
+            dispatcher_url="http://mock-dispatcher.local/api/v1/heartbeat", node_id="test-node-123"
         )
         self.sender = HeartbeatSender(self.config)
         self.sample_metrics = {
@@ -17,11 +17,7 @@ class TestHeartbeatSender(unittest.TestCase):
             "os": "Windows",
             "os_release": "10",
             "state": "IDLE",
-            "metrics": {
-                "cpu_usage_percent": 12.0,
-                "ram_usage_percent": 45.0,
-                "user_inactivity_sec": 300.0
-            }
+            "metrics": {"cpu_usage_percent": 12.0, "ram_usage_percent": 45.0, "user_inactivity_sec": 300.0},
         }
 
     def test_build_payload(self):
@@ -47,6 +43,7 @@ class TestHeartbeatSender(unittest.TestCase):
 
         success = self.sender.send_heartbeat(self.sample_metrics)
         self.assertFalse(success)
+
 
 if __name__ == "__main__":
     unittest.main()

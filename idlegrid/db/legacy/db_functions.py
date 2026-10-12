@@ -7,11 +7,12 @@ from mysql.connector import Error
 # Credentials come from environment variables, never from source code.
 # (The password that used to be hard-coded here is in git history and must be rotated.)
 DB_CONFIG = {
-    'host': os.environ.get('IDLEGRID_DB_HOST', 'localhost'),
-    'user': os.environ.get('IDLEGRID_DB_USER', 'idlegrid'),
-    'password': os.environ.get('IDLEGRID_DB_PASSWORD', ''),
-    'database': os.environ.get('IDLEGRID_DB_NAME', 'compute_scheduler'),
+    "host": os.environ.get("IDLEGRID_DB_HOST", "localhost"),
+    "user": os.environ.get("IDLEGRID_DB_USER", "idlegrid"),
+    "password": os.environ.get("IDLEGRID_DB_PASSWORD", ""),
+    "database": os.environ.get("IDLEGRID_DB_NAME", "compute_scheduler"),
 }
+
 
 def get_connection():
     """Creates and returns a connection to the database."""
@@ -20,6 +21,7 @@ def get_connection():
     except Error as e:
         print(f"Error connecting to MySQL: {e}")
         return None
+
 
 def update_node(ip, status, cpu):
     """Updates a laptop's status, or adds it if it's new."""
@@ -41,6 +43,7 @@ def update_node(ip, status, cpu):
         conn.close()
         print(f"Node {ip} updated successfully.")
 
+
 def get_available_node():
     """Finds one laptop that is currently IDLE."""
     conn = get_connection()
@@ -51,10 +54,11 @@ def get_available_node():
         result = cursor.fetchone()
         cursor.close()
         conn.close()
-        
+
         if result:
-            return result['ip_address']
+            return result["ip_address"]
         return None
+
 
 def assign_job(ip):
     """Creates a new job and assigns it to a specific laptop."""
@@ -69,19 +73,20 @@ def assign_job(ip):
         conn.close()
         return job_id
 
+
 # --- TESTING BLOCK ---
 # If you run this file directly, it will test your database connection
 if __name__ == "__main__":
     print("Testing Database Connection...")
-    
+
     # 1. Simulate two laptops reporting in
     update_node("192.168.1.5", "IDLE", 15.2)
     update_node("192.168.1.10", "BUSY", 89.9)
-    
+
     # 2. Try to find a free laptop
     free_laptop = get_available_node()
     print(f"Found free laptop: {free_laptop}")
-    
+
     # 3. Assign a fake job to it
     if free_laptop:
         new_job_id = assign_job(free_laptop)

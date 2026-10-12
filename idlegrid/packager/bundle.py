@@ -8,13 +8,12 @@ import os
 import io
 import json
 import zipfile
-import shutil
 from pathlib import Path
 from typing import List, Optional, Dict, Union
 import uuid
 import time
 
-from idlegrid.common.models import JobManifest, JobResult, JobStatus, ExecutionMetrics
+from idlegrid.common.models import JobManifest, JobResult
 
 
 class JobPackager:
@@ -30,7 +29,7 @@ class JobPackager:
         env_vars: Optional[Dict[str, str]] = None,
         timeout_seconds: int = 1800,
         estimated_runtime_sec: int = 60,
-        output_bundle_path: Optional[Union[str, Path]] = None
+        output_bundle_path: Optional[Union[str, Path]] = None,
     ) -> bytes:
         """
         Creates a zip bundle containing all source files and a manifest.json.
@@ -52,7 +51,9 @@ class JobPackager:
             req_path = Path(requirements_file).resolve()
             if req_path.exists():
                 with open(req_path, "r", encoding="utf-8") as f:
-                    requirements_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+                    requirements_list = [
+                        line.strip() for line in f if line.strip() and not line.startswith("#")
+                    ]
                 packaged_files.append(req_path.name)
 
         # Collect extra files
@@ -76,7 +77,7 @@ class JobPackager:
             estimated_runtime_sec=estimated_runtime_sec,
             requirements=requirements_list,
             env_vars=env_vars or {},
-            files=packaged_files
+            files=packaged_files,
         )
 
         buffer = io.BytesIO()
@@ -117,10 +118,7 @@ class JobUnpackager:
     """Extracts a job bundle onto a worker machine into an isolated workspace."""
 
     @staticmethod
-    def extract_bundle(
-        bundle_source: Union[bytes, str, Path],
-        target_dir: Union[str, Path]
-    ) -> JobManifest:
+    def extract_bundle(bundle_source: Union[bytes, str, Path], target_dir: Union[str, Path]) -> JobManifest:
         """
         Safely extracts the zip bundle into target_dir and returns the parsed JobManifest.
         Creates an 'output' directory in the workspace for script artifacts.
@@ -164,7 +162,7 @@ class ResultPackager:
     def create_result_bundle(
         workspace_dir: Union[str, Path],
         job_result: JobResult,
-        output_bundle_path: Optional[Union[str, Path]] = None
+        output_bundle_path: Optional[Union[str, Path]] = None,
     ) -> bytes:
         """
         Packages workspace artifacts (contents of 'output/' and logs) alongside job_result.json.
@@ -225,8 +223,7 @@ class ResultUnpackager:
 
     @staticmethod
     def extract_result_bundle(
-        bundle_source: Union[bytes, str, Path],
-        target_dir: Union[str, Path]
+        bundle_source: Union[bytes, str, Path], target_dir: Union[str, Path]
     ) -> JobResult:
         """
         Extracts results and logs to target_dir and returns the JobResult object.

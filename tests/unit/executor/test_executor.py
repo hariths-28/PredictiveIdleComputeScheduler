@@ -4,7 +4,6 @@ Unit tests for JobRunner, ProcessController, and Preemption (suspend/resume).
 
 import time
 import tempfile
-import pytest
 from pathlib import Path
 
 from idlegrid.packager.bundle import JobPackager
@@ -27,13 +26,11 @@ def test_job_runner_sync_execution():
             "with open('output/squares.json', 'w') as f:\n"
             "    json.dump({'count': len(squares), 'sum': sum(squares)}, f)\n"
             "print('Done computation!')\n",
-            encoding="utf-8"
+            encoding="utf-8",
         )
 
         bundle_bytes = JobPackager.create_bundle(
-            entrypoint_file=script_file,
-            job_name="calc_test",
-            estimated_runtime_sec=5
+            entrypoint_file=script_file, job_name="calc_test", estimated_runtime_sec=5
         )
 
         runner = JobRunner(base_workspace_dir=tmp_path / "workspaces")
@@ -64,25 +61,23 @@ def test_job_preemption_pause_resume():
             "    print(f'Step {i}')\n"
             "    sys.stdout.flush()\n"
             "print('Loop finished')\n",
-            encoding="utf-8"
+            encoding="utf-8",
         )
 
         bundle_bytes = JobPackager.create_bundle(
-            entrypoint_file=script_file,
-            job_name="preempt_test",
-            estimated_runtime_sec=5
+            entrypoint_file=script_file, job_name="preempt_test", estimated_runtime_sec=5
         )
 
         captured_logs = []
         runner = JobRunner(
             base_workspace_dir=tmp_path / "workspaces",
-            log_callback=lambda st, text: captured_logs.append(text)
+            log_callback=lambda st, text: captured_logs.append(text),
         )
 
         runner.setup_workspace(bundle_bytes)
         runner.run_async()
 
-        time.sleep(0.3) # Let it start running
+        time.sleep(0.3)  # Let it start running
         assert runner.controller.is_running
 
         # Trigger Preemption Pause

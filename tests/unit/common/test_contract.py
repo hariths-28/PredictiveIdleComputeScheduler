@@ -72,15 +72,35 @@ def test_terminal_status_sets_are_subsets():
 
 def test_heartbeat_round_trip():
     hb = models.Heartbeat(
-        node_id="node-0123456789ab", hostname="laptop", sent_at=1.0, host_state="IDLE",
-        metrics=models.NodeMetrics(cpu_percent=5, host_cpu_percent=5, cpu_count=8, ram_percent=40,
-                                   ram_available_mb=8000, ram_total_mb=16000, disk_free_gb=100,
-                                   user_inactivity_sec=300),
+        node_id="node-0123456789ab",
+        hostname="laptop",
+        sent_at=1.0,
+        host_state="IDLE",
+        metrics=models.NodeMetrics(
+            cpu_percent=5,
+            host_cpu_percent=5,
+            cpu_count=8,
+            ram_percent=40,
+            ram_available_mb=8000,
+            ram_total_mb=16000,
+            disk_free_gb=100,
+            user_inactivity_sec=300,
+        ),
         power=models.PowerInfo(on_ac_power=True, battery_percent=90),
-        capabilities=models.NodeCapabilities(os="Windows", os_release="11", arch="AMD64", python_version="3.12",
-                                             agent_version="0.1.0", cpu_count=8, ram_total_mb=16000, perf_score=1.0,
-                                             input_method="win32_getlastinputinfo", input_precision="PRECISE",
-                                             can_prevent_sleep=True, worker_env_hash="abc"),
+        capabilities=models.NodeCapabilities(
+            os="Windows",
+            os_release="11",
+            arch="AMD64",
+            python_version="3.12",
+            agent_version="0.1.0",
+            cpu_count=8,
+            ram_total_mb=16000,
+            perf_score=1.0,
+            input_method="win32_getlastinputinfo",
+            input_precision="PRECISE",
+            can_prevent_sleep=True,
+            worker_env_hash="abc",
+        ),
         sharing=models.SharingPrefs(),
     )
     again = models.Heartbeat.model_validate_json(hb.model_dump_json())
@@ -90,9 +110,22 @@ def test_heartbeat_round_trip():
 
 def test_usage_batch_limit():
     import pytest
-    sample = models.UsageSample(ts_utc=0, tz_offset_min=330, node_id="n", cpu_percent=1, host_cpu_percent=1,
-                                ram_percent=1, user_inactivity_sec=None, input_method="none",
-                                input_precision="NONE", host_state="UNKNOWN", on_ac_power=None,
-                                battery_percent=None, job_running=False, agent_version="0.1.0")
+
+    sample = models.UsageSample(
+        ts_utc=0,
+        tz_offset_min=330,
+        node_id="n",
+        cpu_percent=1,
+        host_cpu_percent=1,
+        ram_percent=1,
+        user_inactivity_sec=None,
+        input_method="none",
+        input_precision="NONE",
+        host_state="UNKNOWN",
+        on_ac_power=None,
+        battery_percent=None,
+        job_running=False,
+        agent_version="0.1.0",
+    )
     with pytest.raises(Exception):
         models.UsageBatch(node_id="n", samples=[sample] * 2001)

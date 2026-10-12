@@ -4,7 +4,6 @@ Manages the process tree, log streaming, and instant preemption (suspend/resume)
 """
 
 import os
-import sys
 import time
 import subprocess
 import threading
@@ -29,8 +28,8 @@ class ProcessController:
         command: List[str],
         cwd: Path,
         env: Optional[Dict[str, str]] = None,
-        log_callback: Optional[Callable[[str, str], None]] = None, # (stream_type, text)
-        status_callback: Optional[Callable[[JobStatus], None]] = None
+        log_callback: Optional[Callable[[str, str], None]] = None,  # (stream_type, text)
+        status_callback: Optional[Callable[[JobStatus], None]] = None,
     ):
         self.command = command
         self.cwd = Path(cwd).resolve()
@@ -86,14 +85,22 @@ class ProcessController:
                 stderr=subprocess.PIPE,
                 text=True,
                 bufsize=1,
-                universal_newlines=True
+                universal_newlines=True,
             )
 
             self.psutil_proc = psutil.Process(self.process.pid)
 
             # Start reader threads for stdout and stderr
-            self._stdout_thread = threading.Thread(target=self._read_stream, args=(self.process.stdout, "stdout", self.stdout_log_path), daemon=True)
-            self._stderr_thread = threading.Thread(target=self._read_stream, args=(self.process.stderr, "stderr", self.stderr_log_path), daemon=True)
+            self._stdout_thread = threading.Thread(
+                target=self._read_stream,
+                args=(self.process.stdout, "stdout", self.stdout_log_path),
+                daemon=True,
+            )
+            self._stderr_thread = threading.Thread(
+                target=self._read_stream,
+                args=(self.process.stderr, "stderr", self.stderr_log_path),
+                daemon=True,
+            )
             self._stdout_thread.start()
             self._stderr_thread.start()
 
@@ -114,7 +121,7 @@ class ProcessController:
             return
 
         with open(log_file, "a", encoding="utf-8") as f:
-            for line in iter(stream.readline, ''):
+            for line in iter(stream.readline, ""):
                 if not line:
                     break
                 f.write(line)
@@ -185,9 +192,11 @@ class ProcessController:
             self._pause_start_time = time.time()
             self.metrics.pause_count += 1
             self._update_status(JobStatus.PAUSED)
-            
+
             if self.log_callback:
-                self.log_callback("stdout", f"[SYSTEM PREEMPTION] Job paused because host activity was detected.\n")
+                self.log_callback(
+                    "stdout", "[SYSTEM PREEMPTION] Job paused because host activity was detected.\n"
+                )
 
             return True
         except Exception as e:
@@ -219,7 +228,9 @@ class ProcessController:
             self._update_status(JobStatus.RUNNING)
 
             if self.log_callback:
-                self.log_callback("stdout", f"[SYSTEM RESUMED] Host is idle again. Resuming compute job execution.\n")
+                self.log_callback(
+                    "stdout", "[SYSTEM RESUMED] Host is idle again. Resuming compute job execution.\n"
+                )
 
             return True
         except Exception as e:
@@ -278,11 +289,11 @@ class ProcessController:
         self._stop_requested.set()
 
         # Allow stream reader threads to finish reading final buffer and close file handles
-        if hasattr(self, '_stdout_thread') and self._stdout_thread.is_alive():
+        if hasattr(self, "_stdout_thread") and self._stdout_thread.is_alive():
             self._stdout_thread.join(timeout=1.0)
-        if hasattr(self, '_stderr_thread') and self._stderr_thread.is_alive():
+        if hasattr(self, "_stderr_thread") and self._stderr_thread.is_alive():
             self._stderr_thread.join(timeout=1.0)
-        if hasattr(self, '_metric_thread') and self._metric_thread.is_alive():
+        if hasattr(self, "_metric_thread") and self._metric_thread.is_alive():
             self._metric_thread.join(timeout=0.5)
 
         self.metrics.end_time = time.time()

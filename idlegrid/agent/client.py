@@ -1,8 +1,8 @@
 import logging
 import requests
-from typing import Optional, Dict, Any
 
 logger = logging.getLogger("NodeAgent.HeartbeatSender")
+
 
 class HeartbeatSender:
     def __init__(self, config):
@@ -19,7 +19,7 @@ class HeartbeatSender:
             "hostname": metrics_data["hostname"],
             "os": metrics_data["os"],
             "os_release": metrics_data["os_release"],
-            "metrics": metrics_data["metrics"]
+            "metrics": metrics_data["metrics"],
         }
 
     def send_heartbeat(self, metrics_data: dict) -> bool:

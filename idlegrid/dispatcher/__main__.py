@@ -7,8 +7,9 @@ import uvicorn
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="idlegrid-dispatcher", description="IdleGrid coordinator")
-    parser.add_argument("--host", default="127.0.0.1",
-                        help="Bind address (use 0.0.0.0 so other laptops can reach it)")
+    parser.add_argument(
+        "--host", default="127.0.0.1", help="Bind address (use 0.0.0.0 so other laptops can reach it)"
+    )
     parser.add_argument("--port", type=int, default=8000, help="Port (default 8000)")
     args = parser.parse_args()
     # Exactly one worker: the scheduler state lives in this process (PRD section 10.3.4).

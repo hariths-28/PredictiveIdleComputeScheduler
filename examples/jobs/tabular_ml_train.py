@@ -10,14 +10,14 @@ import time
 import json
 import csv
 from pathlib import Path
-import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
+
 def train_model(n_samples: int = 50000, n_trees: int = 100):
-    print(f"=== [GRID JOB] Distributed Scikit-Learn Model Training ===")
+    print("=== [GRID JOB] Distributed Scikit-Learn Model Training ===")
     print(f"Dataset Size: {n_samples:,} rows | Number of Trees: {n_trees}")
     print(f"Process PID: {os.getpid()}")
     sys.stdout.flush()
@@ -29,11 +29,7 @@ def train_model(n_samples: int = 50000, n_trees: int = 100):
     print("[1/4] Generating synthetic tabular dataset (20 features, 2 classes)...")
     sys.stdout.flush()
     X, y = make_classification(
-        n_samples=n_samples,
-        n_features=20,
-        n_informative=12,
-        n_redundant=4,
-        random_state=42
+        n_samples=n_samples, n_features=20, n_informative=12, n_redundant=4, random_state=42
     )
 
     print("[2/4] Splitting train/test sets (80/20)...")
@@ -70,17 +66,21 @@ def train_model(n_samples: int = 50000, n_trees: int = 100):
     # Save metrics JSON
     metrics_path = output_dir / "model_metrics.json"
     with open(metrics_path, "w", encoding="utf-8") as f:
-        json.dump({
-            "task": "tabular_random_forest",
-            "samples": n_samples,
-            "n_trees": n_trees,
-            "accuracy": round(acc, 4),
-            "precision": round(prec, 4),
-            "recall": round(rec, 4),
-            "f1_score": round(f1, 4),
-            "fit_time_sec": round(fit_time, 3),
-            "total_time_sec": round(total_time, 3)
-        }, f, indent=2)
+        json.dump(
+            {
+                "task": "tabular_random_forest",
+                "samples": n_samples,
+                "n_trees": n_trees,
+                "accuracy": round(acc, 4),
+                "precision": round(prec, 4),
+                "recall": round(rec, 4),
+                "f1_score": round(f1, 4),
+                "fit_time_sec": round(fit_time, 3),
+                "total_time_sec": round(total_time, 3),
+            },
+            f,
+            indent=2,
+        )
 
     # Save sample predictions CSV
     pred_path = output_dir / "predictions.csv"
@@ -93,6 +93,7 @@ def train_model(n_samples: int = 50000, n_trees: int = 100):
     print(f"Metrics saved to '{metrics_path}'")
     print(f"Predictions sample saved to '{pred_path}'")
     sys.stdout.flush()
+
 
 if __name__ == "__main__":
     samples = 30000

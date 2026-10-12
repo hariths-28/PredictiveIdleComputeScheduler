@@ -3,7 +3,6 @@ End-to-End API and Integration test for dashboard endpoints, preemption, and job
 """
 
 import time
-import requests
 import pytest
 from fastapi.testclient import TestClient
 

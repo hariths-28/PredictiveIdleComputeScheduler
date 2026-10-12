@@ -9,7 +9,9 @@ import subprocess
 import sys
 
 PATTERNS = [
-    re.compile(r"""(?i)\b(password|passwd|pwd|secret|api_key|token)\b\s*['"]?\s*[:=]\s*['"][^'"\s]{3,}['"]"""),
+    re.compile(
+        r"""(?i)\b(password|passwd|pwd|secret|api_key|token)\b\s*['"]?\s*[:=]\s*['"][^'"\s]{3,}['"]"""
+    ),
     re.compile(r"-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
 ]

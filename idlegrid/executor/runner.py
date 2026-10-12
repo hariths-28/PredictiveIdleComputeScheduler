@@ -8,9 +8,9 @@ import shutil
 import logging
 import threading
 from pathlib import Path
-from typing import Optional, Callable, Union, Dict
+from typing import Optional, Callable, Union
 
-from idlegrid.common.models import JobManifest, JobResult, JobStatus, ExecutionMetrics
+from idlegrid.common.models import JobManifest, JobResult, JobStatus
 from idlegrid.packager.bundle import JobUnpackager, ResultPackager
 from idlegrid.executor.process_controller import ProcessController
 
@@ -27,7 +27,7 @@ class JobRunner:
         self,
         base_workspace_dir: Union[str, Path] = "./workspaces/jobs",
         log_callback: Optional[Callable[[str, str], None]] = None,
-        status_callback: Optional[Callable[[JobStatus], None]] = None
+        status_callback: Optional[Callable[[JobStatus], None]] = None,
     ):
         self.base_workspace_dir = Path(base_workspace_dir).resolve()
         self.base_workspace_dir.mkdir(parents=True, exist_ok=True)
@@ -60,7 +60,7 @@ class JobRunner:
         self,
         bundle_source: Optional[Union[bytes, str, Path]] = None,
         manifest: Optional[JobManifest] = None,
-        workspace_dir: Optional[Union[str, Path]] = None
+        workspace_dir: Optional[Union[str, Path]] = None,
     ) -> JobResult:
         """
         Executes the job synchronously and returns the JobResult.
@@ -80,7 +80,7 @@ class JobRunner:
                 job_id=self.manifest.job_id,
                 status=JobStatus.FAILED,
                 exit_code=-1,
-                error_message=f"Entrypoint script '{self.manifest.entrypoint}' not found in workspace."
+                error_message=f"Entrypoint script '{self.manifest.entrypoint}' not found in workspace.",
             )
             self.job_result = result
             return result
@@ -92,7 +92,7 @@ class JobRunner:
             cwd=self.workspace_dir,
             env=self.manifest.env_vars,
             log_callback=self.log_callback,
-            status_callback=self.status_callback
+            status_callback=self.status_callback,
         )
 
         started = self.controller.start()
@@ -101,15 +101,17 @@ class JobRunner:
                 job_id=self.manifest.job_id,
                 status=JobStatus.FAILED,
                 exit_code=-1,
-                error_message="Process controller failed to spawn process."
+                error_message="Process controller failed to spawn process.",
             )
             self.job_result = result
             return result
 
         exit_code = self.controller.wait(timeout=self.manifest.timeout_seconds)
 
-        status = JobStatus.COMPLETED if exit_code == 0 else (
-            JobStatus.CANCELLED if self.controller.status == JobStatus.CANCELLED else JobStatus.FAILED
+        status = (
+            JobStatus.COMPLETED
+            if exit_code == 0
+            else (JobStatus.CANCELLED if self.controller.status == JobStatus.CANCELLED else JobStatus.FAILED)
         )
 
         self.job_result = JobResult(
@@ -119,7 +121,7 @@ class JobRunner:
             stdout=self.controller.stdout,
             stderr=self.controller.stderr,
             metrics=self.controller.metrics,
-            completed_at=time.time()
+            completed_at=time.time(),
         )
 
         # Package results inside the workspace
@@ -127,7 +129,7 @@ class JobRunner:
         ResultPackager.create_result_bundle(
             workspace_dir=self.workspace_dir,
             job_result=self.job_result,
-            output_bundle_path=result_bundle_path
+            output_bundle_path=result_bundle_path,
         )
 
         return self.job_result
@@ -135,9 +137,10 @@ class JobRunner:
     def run_async(
         self,
         bundle_source: Optional[Union[bytes, str, Path]] = None,
-        on_complete: Optional[Callable[[JobResult], None]] = None
+        on_complete: Optional[Callable[[JobResult], None]] = None,
     ):
         """Runs the job asynchronously in a background worker thread."""
+
         def _target():
             res = self.run_sync(bundle_source=bundle_source)
             if on_complete:

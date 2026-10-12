@@ -15,8 +15,14 @@ def test_mysql_reachable():
     import pymysql
 
     u = urlparse(DB_URL.replace("mysql+pymysql://", "mysql://", 1))
-    conn = pymysql.connect(host=u.hostname, port=u.port or 3306, user=u.username, password=u.password or "",
-                           database=u.path.lstrip("/") or None, connect_timeout=10)
+    conn = pymysql.connect(
+        host=u.hostname,
+        port=u.port or 3306,
+        user=u.username,
+        password=u.password or "",
+        database=u.path.lstrip("/") or None,
+        connect_timeout=10,
+    )
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT VERSION()")

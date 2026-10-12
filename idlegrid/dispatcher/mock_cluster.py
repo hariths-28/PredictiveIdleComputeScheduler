@@ -7,20 +7,13 @@ import time
 import uuid
 import random
 import threading
-import asyncio
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any
 
 from idlegrid.common.legacy import NodeTelemetry
-from idlegrid.common.models import (
-    NodeStatus,
-    JobManifest,
-    JobResult,
-    JobStatus,
-    ExecutionMetrics
-)
+from idlegrid.common.models import NodeStatus, JobResult, JobStatus
 from idlegrid.executor.runner import JobRunner
-from idlegrid.packager.bundle import JobUnpackager, ResultPackager, ResultUnpackager
+from idlegrid.packager.bundle import JobUnpackager
 
 
 class ClusterOrchestrator:
@@ -61,8 +54,8 @@ class ClusterOrchestrator:
                 "ram_total_mb": 16384,
                 "idle_time_seconds": 900,
                 "is_user_active": False,
-                "predicted_idle_window_seconds": 5400, # 90 mins (in lecture)
-                "status": NodeStatus.IDLE_SAFE
+                "predicted_idle_window_seconds": 5400,  # 90 mins (in lecture)
+                "status": NodeStatus.IDLE_SAFE,
             },
             {
                 "node_id": "node-macbook-c",
@@ -74,8 +67,8 @@ class ClusterOrchestrator:
                 "ram_total_mb": 16384,
                 "idle_time_seconds": 240,
                 "is_user_active": False,
-                "predicted_idle_window_seconds": 3600, # 60 mins
-                "status": NodeStatus.IDLE_SAFE
+                "predicted_idle_window_seconds": 3600,  # 60 mins
+                "status": NodeStatus.IDLE_SAFE,
             },
             {
                 "node_id": "node-thinkpad-d",
@@ -87,8 +80,8 @@ class ClusterOrchestrator:
                 "ram_total_mb": 16384,
                 "idle_time_seconds": 30,
                 "is_user_active": True,
-                "predicted_idle_window_seconds": 120, # Risky, discord browsing
-                "status": NodeStatus.HOST_ACTIVE
+                "predicted_idle_window_seconds": 120,  # Risky, discord browsing
+                "status": NodeStatus.HOST_ACTIVE,
             },
             {
                 "node_id": "node-lab-01",
@@ -100,9 +93,9 @@ class ClusterOrchestrator:
                 "ram_total_mb": 32768,
                 "idle_time_seconds": 7200,
                 "is_user_active": False,
-                "predicted_idle_window_seconds": 14400, # 4 hours
-                "status": NodeStatus.IDLE_SAFE
-            }
+                "predicted_idle_window_seconds": 14400,  # 4 hours
+                "status": NodeStatus.IDLE_SAFE,
+            },
         ]
 
         for n in nodes_init:
@@ -122,13 +115,15 @@ class ClusterOrchestrator:
                         node.cpu_percent = round(random.uniform(60.0, 95.0), 1)
                         node.idle_time_seconds += 2
                         node.is_user_active = False
-                    else: # IDLE_SAFE / IDLE_RISKY
+                    else:  # IDLE_SAFE / IDLE_RISKY
                         node.cpu_percent = round(random.uniform(1.0, 6.0), 1)
                         node.idle_time_seconds += 2
                         node.is_user_active = False
                         # Slight drift in ML Oracle estimate
                         if node.predicted_idle_window_seconds > 0:
-                            node.predicted_idle_window_seconds = max(0, node.predicted_idle_window_seconds - 2)
+                            node.predicted_idle_window_seconds = max(
+                                0, node.predicted_idle_window_seconds - 2
+                            )
 
             time.sleep(2.0)
 
@@ -142,14 +137,14 @@ class ClusterOrchestrator:
             if node_id not in self.nodes:
                 return None
             node = self.nodes[node_id]
-            
+
             if node.status == NodeStatus.HOST_ACTIVE:
                 # Host went idle -> Safe
                 node.status = NodeStatus.IDLE_SAFE
                 node.is_user_active = False
                 node.idle_time_seconds = 10
                 node.predicted_idle_window_seconds = 3600
-                
+
                 # If there's an assigned running job, resume it
                 if node.current_job_id and node.current_job_id in self.runners:
                     self.resume_job(node.current_job_id)
@@ -159,7 +154,7 @@ class ClusterOrchestrator:
                 node.is_user_active = True
                 node.idle_time_seconds = 0
                 node.predicted_idle_window_seconds = 0
-                
+
                 # If there's an assigned running job, trigger instant preemption pause
                 if node.current_job_id and node.current_job_id in self.runners:
                     self.pause_job(node.current_job_id)
@@ -197,11 +192,13 @@ class ClusterOrchestrator:
             "peak_ram_mb": 0.0,
             "artifact_files": [],
             "error_message": None,
-            "manifest": manifest.model_dump()
+            "manifest": manifest.model_dump(),
         }
 
         self.jobs[job_id] = job_record
-        self.log_buffers[job_id] = [f"[DISPATCHER] Job {job_id} ({job_name}) received at {time.strftime('%X')}.\n"]
+        self.log_buffers[job_id] = [
+            f"[DISPATCHER] Job {job_id} ({job_name}) received at {time.strftime('%X')}.\n"
+        ]
 
         if best_node:
             self._start_job_on_node(job_id, bundle_bytes, best_node.node_id)
@@ -212,12 +209,13 @@ class ClusterOrchestrator:
         """ML Oracle Selection: picks the node with the highest confidence and safest idle window."""
         with self._lock:
             candidates = [
-                n for n in self.nodes.values()
+                n
+                for n in self.nodes.values()
                 if n.status == NodeStatus.IDLE_SAFE and not n.is_user_active and n.current_job_id is None
             ]
             if not candidates:
                 return None
-            
+
             # Sort by highest predicted idle window
             candidates.sort(key=lambda n: n.predicted_idle_window_seconds, reverse=True)
             return candidates[0]
@@ -234,7 +232,7 @@ class ClusterOrchestrator:
         self.jobs[job_id]["assigned_hostname"] = node.hostname
 
         self.log_buffers[job_id].append(
-            f"[ORACLE] ML Oracle selected node '{node.hostname}' (Predicted idle: {node.predicted_idle_window_seconds//60:.0f} min).\n"
+            f"[ORACLE] ML Oracle selected node '{node.hostname}' (Predicted idle: {node.predicted_idle_window_seconds // 60:.0f} min).\n"
             f"[EXECUTOR] Dispatched to sandbox on {node_id}. Starting execution...\n"
         )
 
@@ -253,9 +251,7 @@ class ClusterOrchestrator:
                     self.jobs[job_id]["peak_ram_mb"] = m.peak_ram_mb
 
         runner = JobRunner(
-            base_workspace_dir=self.workspace_root / "jobs",
-            log_callback=_log_cb,
-            status_callback=_status_cb
+            base_workspace_dir=self.workspace_root / "jobs", log_callback=_log_cb, status_callback=_status_cb
         )
         self.runners[job_id] = runner
 
@@ -292,7 +288,9 @@ class ClusterOrchestrator:
             ok = self.runners[job_id].pause()
             if ok and job_id in self.jobs:
                 self.jobs[job_id]["status"] = JobStatus.PAUSED
-                self.log_buffers[job_id].append(f"[PREEMPTION] Host activity triggered preemption. Job {job_id} paused.\n")
+                self.log_buffers[job_id].append(
+                    f"[PREEMPTION] Host activity triggered preemption. Job {job_id} paused.\n"
+                )
             return ok
         return False
 

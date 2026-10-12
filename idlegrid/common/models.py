@@ -1,4 +1,5 @@
 """IdleGrid shared contracts. Changes follow PRD §15.4. Never edit casually."""
+
 from __future__ import annotations
 
 import time
@@ -12,45 +13,82 @@ SCHEMA_VERSION = "1.0"
 
 # ───────────────────────── Enums ─────────────────────────
 class JobStatus(str, Enum):
-    QUEUED = "QUEUED"; ASSIGNED = "ASSIGNED"; RUNNING = "RUNNING"; PAUSED = "PAUSED"
-    COMPLETED = "COMPLETED"; FAILED = "FAILED"; CANCELLED = "CANCELLED"; TIMED_OUT = "TIMED_OUT"
+    QUEUED = "QUEUED"
+    ASSIGNED = "ASSIGNED"
+    RUNNING = "RUNNING"
+    PAUSED = "PAUSED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    TIMED_OUT = "TIMED_OUT"
+
 
 TERMINAL_JOB_STATUSES = {JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED, JobStatus.TIMED_OUT}
 
 
 class AttemptStatus(str, Enum):
-    ASSIGNED = "ASSIGNED"; RUNNING = "RUNNING"; PAUSED = "PAUSED"
-    COMPLETED = "COMPLETED"; FAILED = "FAILED"; CANCELLED = "CANCELLED"; TIMED_OUT = "TIMED_OUT"
-    MIGRATED = "MIGRATED"; LOST = "LOST"
+    ASSIGNED = "ASSIGNED"
+    RUNNING = "RUNNING"
+    PAUSED = "PAUSED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    TIMED_OUT = "TIMED_OUT"
+    MIGRATED = "MIGRATED"
+    LOST = "LOST"
 
-TERMINAL_ATTEMPT_STATUSES = {AttemptStatus.COMPLETED, AttemptStatus.FAILED, AttemptStatus.CANCELLED,
-                             AttemptStatus.TIMED_OUT, AttemptStatus.MIGRATED, AttemptStatus.LOST}
+
+TERMINAL_ATTEMPT_STATUSES = {
+    AttemptStatus.COMPLETED,
+    AttemptStatus.FAILED,
+    AttemptStatus.CANCELLED,
+    AttemptStatus.TIMED_OUT,
+    AttemptStatus.MIGRATED,
+    AttemptStatus.LOST,
+}
 
 
 class NodeStatus(str, Enum):
-    OFFLINE = "OFFLINE"; HOST_ACTIVE = "HOST_ACTIVE"; HOST_BUSY = "HOST_BUSY"
-    IDLE_SAFE = "IDLE_SAFE"; IDLE_RISKY = "IDLE_RISKY"; RUNNING_JOB = "RUNNING_JOB"
-    DRAINING = "DRAINING"; UNSCHEDULABLE = "UNSCHEDULABLE"
+    OFFLINE = "OFFLINE"
+    HOST_ACTIVE = "HOST_ACTIVE"
+    HOST_BUSY = "HOST_BUSY"
+    IDLE_SAFE = "IDLE_SAFE"
+    IDLE_RISKY = "IDLE_RISKY"
+    RUNNING_JOB = "RUNNING_JOB"
+    DRAINING = "DRAINING"
+    UNSCHEDULABLE = "UNSCHEDULABLE"
 
 
 class HostState(str, Enum):
-    ACTIVE = "ACTIVE"; BUSY = "BUSY"; IDLE = "IDLE"; UNKNOWN = "UNKNOWN"
+    ACTIVE = "ACTIVE"
+    BUSY = "BUSY"
+    IDLE = "IDLE"
+    UNKNOWN = "UNKNOWN"
 
 
 class InputDetection(str, Enum):
-    PRECISE = "PRECISE"; COARSE = "COARSE"; NONE = "NONE"
+    PRECISE = "PRECISE"
+    COARSE = "COARSE"
+    NONE = "NONE"
 
 
 class JobKind(str, Enum):
-    SCRIPT = "SCRIPT"; HPO_TRIAL = "HPO_TRIAL"
+    SCRIPT = "SCRIPT"
+    HPO_TRIAL = "HPO_TRIAL"
 
 
 class CommandType(str, Enum):
-    START = "START"; ABORT = "ABORT"; PAUSE = "PAUSE"; RESUME = "RESUME"
+    START = "START"
+    ABORT = "ABORT"
+    PAUSE = "PAUSE"
+    RESUME = "RESUME"
 
 
 class StudyStatus(str, Enum):
-    RUNNING = "RUNNING"; COMPLETED = "COMPLETED"; FAILED = "FAILED"; CANCELLED = "CANCELLED"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
 
 
 # ───────────────────────── Job bundles & execution ─────────────────────────
@@ -61,27 +99,28 @@ class HpoTrialRef(BaseModel):
 
 class JobManifest(BaseModel):
     """manifest.json inside every job bundle (created by the packager)."""
-    job_id: str | None = None                  # assigned by the Dispatcher; ignored on submit
+
+    job_id: str | None = None  # assigned by the Dispatcher; ignored on submit
     job_name: str
     kind: JobKind = JobKind.SCRIPT
-    entrypoint: str                            # relative path of the .py file inside the bundle
+    entrypoint: str  # relative path of the .py file inside the bundle
     args: list[str] = Field(default_factory=list)
     created_at: float = Field(default_factory=time.time)
-    timeout_seconds: int = 3600                # ACTIVE (unpaused) seconds
-    estimated_runtime_sec: int = 60            # on the reference laptop (perf_score = 1.0)
+    timeout_seconds: int = 3600  # ACTIVE (unpaused) seconds
+    estimated_runtime_sec: int = 60  # on the reference laptop (perf_score = 1.0)
     ram_required_mb: int = 1024
-    requirements: list[str] | None = None      # informational; must be satisfied by the shared worker env
+    requirements: list[str] | None = None  # informational; must be satisfied by the shared worker env
     env_vars: dict[str, str] = Field(default_factory=dict)
     files: list[str] = Field(default_factory=list)
-    user_id: str | None = None                 # ignored; the Dispatcher uses the token's user
+    user_id: str | None = None  # ignored; the Dispatcher uses the token's user
     hpo: HpoTrialRef | None = None
 
 
 class ExecutionMetrics(BaseModel):
     start_time: float | None = None
     end_time: float | None = None
-    duration_seconds: float = 0.0              # wall clock incl. pauses
-    active_seconds: float = 0.0                # wall clock excl. pauses (used for timeouts & wasted compute)
+    duration_seconds: float = 0.0  # wall clock incl. pauses
+    active_seconds: float = 0.0  # wall clock excl. pauses (used for timeouts & wasted compute)
     cpu_percent_samples: list[float] = Field(default_factory=list)
     ram_mb_samples: list[float] = Field(default_factory=list)
     peak_cpu_percent: float = 0.0
@@ -93,31 +132,31 @@ class ExecutionMetrics(BaseModel):
 class JobResult(BaseModel):
     job_id: str
     attempt_id: str | None = None
-    status: JobStatus                          # COMPLETED | FAILED | CANCELLED | TIMED_OUT
+    status: JobStatus  # COMPLETED | FAILED | CANCELLED | TIMED_OUT
     exit_code: int | None = None
-    stdout: str = ""                           # last 64 KB only
-    stderr: str = ""                           # last 64 KB only
+    stdout: str = ""  # last 64 KB only
+    stderr: str = ""  # last 64 KB only
     metrics: ExecutionMetrics = Field(default_factory=ExecutionMetrics)
     artifact_files: list[str] = Field(default_factory=list)
     error_message: str | None = None
     completed_at: float = Field(default_factory=time.time)
-    objective_value: float | None = None       # HPO trials only
+    objective_value: float | None = None  # HPO trials only
 
 
 # ───────────────────────── Agent → Dispatcher ─────────────────────────
 class NodeMetrics(BaseModel):
-    cpu_percent: float                         # whole system, 0–100
-    host_cpu_percent: float                    # system minus our job's processes, 0–100
+    cpu_percent: float  # whole system, 0–100
+    host_cpu_percent: float  # system minus our job's processes, 0–100
     cpu_count: int
     ram_percent: float
     ram_available_mb: float
     ram_total_mb: float
     disk_free_gb: float
-    user_inactivity_sec: float | None          # None = could not be read
+    user_inactivity_sec: float | None  # None = could not be read
 
 
 class PowerInfo(BaseModel):
-    on_ac_power: bool | None = None            # None = no battery (desktop) or unknown
+    on_ac_power: bool | None = None  # None = no battery (desktop) or unknown
     battery_percent: float | None = None
 
 
@@ -147,7 +186,7 @@ class AttemptReport(BaseModel):
     attempt_id: str
     job_id: str
     status: Literal["STARTING", "RUNNING", "PAUSED", "UPLOADING"]
-    paused_since: float | None = None          # epoch seconds, already corrected to server clock
+    paused_since: float | None = None  # epoch seconds, already corrected to server clock
     active_seconds: float = 0.0
     pause_count: int = 0
     manual_pause: bool = False
@@ -156,7 +195,7 @@ class AttemptReport(BaseModel):
 class CommandResult(BaseModel):
     command_id: str
     ok: bool
-    error: str | None = None                   # e.g. "host_active", "busy", "not_accepting", "bundle_integrity"
+    error: str | None = None  # e.g. "host_active", "busy", "not_accepting", "bundle_integrity"
 
 
 class Heartbeat(BaseModel):
@@ -178,7 +217,7 @@ class StartJobPayload(BaseModel):
     job_id: str
     attempt_id: str
     kind: JobKind
-    bundle_path: str                           # e.g. "/api/v1/attempts/{attempt_id}/bundle"
+    bundle_path: str  # e.g. "/api/v1/attempts/{attempt_id}/bundle"
     bundle_sha256: str
     bundle_size: int
     manifest: JobManifest
@@ -190,7 +229,7 @@ class NodeCommand(BaseModel):
     command_id: str
     type: CommandType
     attempt_id: str | None = None
-    payload: dict[str, Any] = Field(default_factory=dict)   # START → StartJobPayload; ABORT → {"reason": str}
+    payload: dict[str, Any] = Field(default_factory=dict)  # START → StartJobPayload; ABORT → {"reason": str}
     created_at: float
 
 
@@ -328,13 +367,13 @@ class JobView(BaseModel):
     estimated_runtime_sec: int
     timeout_seconds: int
     ram_required_mb: int
-    assigned_node_id: str | None = None        # node of current/final attempt
+    assigned_node_id: str | None = None  # node of current/final attempt
     assigned_hostname: str | None = None
     attempts_count: int = 0
-    duration_seconds: float = 0.0              # created_at → completed_at (or now)
-    active_seconds: float = 0.0                # of the final/current attempt
-    wasted_seconds: float = 0.0                # Σ active_seconds of MIGRATED/LOST attempts
-    pause_count: int = 0                       # over all attempts
+    duration_seconds: float = 0.0  # created_at → completed_at (or now)
+    active_seconds: float = 0.0  # of the final/current attempt
+    wasted_seconds: float = 0.0  # Σ active_seconds of MIGRATED/LOST attempts
+    pause_count: int = 0  # over all attempts
     total_pause_duration_sec: float = 0.0
     peak_cpu_percent: float = 0.0
     peak_ram_mb: float = 0.0
@@ -362,7 +401,7 @@ class ParamSpec(BaseModel):
     high: float | None = None
     log: bool = False
     step: float | None = None
-    choices: list[Any] | None = None           # required for categorical; JSON scalars only
+    choices: list[Any] | None = None  # required for categorical; JSON scalars only
 
 
 class StudySpec(BaseModel):
@@ -409,7 +448,7 @@ class StudyView(BaseModel):
     wall_time_sec: float = 0.0
     sequential_estimate_sec: float = 0.0
     speedup_estimate: float | None = None
-    trials: list[TrialView] | None = None      # only on GET /hpo/studies/{id}
+    trials: list[TrialView] | None = None  # only on GET /hpo/studies/{id}
 
 
 class ExperimentSummary(BaseModel):
@@ -443,13 +482,13 @@ class ExperimentRunView(BaseModel):
 class TelemetrySnapshot(BaseModel):
     server_time: float
     nodes: list[NodeView]
-    jobs: list[JobView]                        # all active + 50 most recent
-    studies: list[StudyView]                   # without trials
+    jobs: list[JobView]  # all active + 50 most recent
+    studies: list[StudyView]  # without trials
     active_policy: str
     active_experiment_run_id: str | None = None
 
 
 class ErrorResponse(BaseModel):
-    error: str                                 # machine code, e.g. "stale_attempt", "bundle_invalid"
+    error: str  # machine code, e.g. "stale_attempt", "bundle_invalid"
     message: str
     details: dict[str, Any] | None = None

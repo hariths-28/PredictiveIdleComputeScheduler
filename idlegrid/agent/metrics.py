@@ -11,6 +11,7 @@ if sys.platform == "win32":
     class LASTINPUTINFO(ctypes.Structure):
         _fields_ = [("cbSize", ctypes.c_uint), ("dwTime", ctypes.c_uint)]
 
+
 def get_user_inactivity_seconds() -> float:
     """Returns the seconds elapsed since the last user mouse/keyboard input."""
     if sys.platform == "win32":
@@ -27,6 +28,7 @@ def get_user_inactivity_seconds() -> float:
         except Exception:
             pass
     return 0.0
+
 
 class MetricsCollector:
     def __init__(self, config):
@@ -46,9 +48,7 @@ class MetricsCollector:
 
         # Determine node state
         state = self.determine_node_state(
-            cpu_usage=cpu_usage,
-            ram_usage=memory_info.percent,
-            inactivity_sec=inactivity_sec
+            cpu_usage=cpu_usage, ram_usage=memory_info.percent, inactivity_sec=inactivity_sec
         )
 
         return {
@@ -67,8 +67,8 @@ class MetricsCollector:
                 "disk_free_gb": round(disk_info.free / (1024**3), 2),
                 "net_bytes_sent": net_info.bytes_sent,
                 "net_bytes_recv": net_info.bytes_recv,
-                "user_inactivity_sec": inactivity_sec
-            }
+                "user_inactivity_sec": inactivity_sec,
+            },
         }
 
     def determine_node_state(self, cpu_usage: float, ram_usage: float, inactivity_sec: float) -> str:
@@ -80,7 +80,7 @@ class MetricsCollector:
         """
         if sys.platform == "win32" and inactivity_sec < self.config.user_inactivity_threshold_sec:
             return "USER_ACTIVE"
-        
+
         if cpu_usage > self.config.cpu_idle_threshold or ram_usage > self.config.ram_idle_threshold:
             return "BUSY"
 

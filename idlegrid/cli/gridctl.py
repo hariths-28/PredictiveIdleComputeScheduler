@@ -17,19 +17,17 @@ if sys.platform == "win32":
 
 import time
 import argparse
-from typing import List, Optional
 import requests
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.text import Text
 from rich.syntax import Syntax
-from rich import print as rprint
 
 from idlegrid.packager.bundle import JobPackager, ResultUnpackager
 from idlegrid.executor.runner import JobRunner
-from idlegrid.common.models import JobStatus, NodeStatus
+from idlegrid.common.models import JobStatus
 from idlegrid.common.paths import EXAMPLE_JOBS_DIR
 
 console = Console(legacy_windows=False)
@@ -76,13 +74,9 @@ def submit_cmd(args):
     extra_files = [Path(p) for p in args.data] if args.data else []
     req_file = Path(args.requirements) if args.requirements else None
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[bold cyan]{task.description}"),
-        console=console
-    ) as progress:
+    with Progress(SpinnerColumn(), TextColumn("[bold cyan]{task.description}"), console=console) as progress:
         task = progress.add_task("Packaging job bundle and manifest...", total=None)
-        
+
         bundle_bytes = JobPackager.create_bundle(
             entrypoint_file=entrypoint,
             extra_files=extra_files,
@@ -90,28 +84,28 @@ def submit_cmd(args):
             args=args.job_args or [],
             requirements_file=req_file,
             timeout_seconds=args.timeout or 1800,
-            estimated_runtime_sec=args.estimated_runtime or 60
+            estimated_runtime_sec=args.estimated_runtime or 60,
         )
         progress.update(task, description=f"Bundle packaged ({len(bundle_bytes) / 1024:.1f} KB)")
 
     if args.local:
         console.print("[bold yellow]Running locally via embedded JobRunner...[/]")
-        runner = JobRunner(
-            log_callback=lambda st, text: sys.stdout.write(text) if args.follow else None
-        )
+        runner = JobRunner(log_callback=lambda st, text: sys.stdout.write(text) if args.follow else None)
         res = runner.run_sync(bundle_source=bundle_bytes)
-        
+
         console.print()
-        console.print(Panel(
-            f"[bold]Job ID:[/] {res.job_id}\n"
-            f"[bold]Status:[/] {format_status(res.status).markup}\n"
-            f"[bold]Exit Code:[/] {res.exit_code}\n"
-            f"[bold]Duration:[/] {res.metrics.duration_seconds:.2f}s\n"
-            f"[bold]Peak RAM:[/] {res.metrics.peak_ram_mb:.1f} MB\n"
-            f"[bold]Pause/Preempt Count:[/] {res.metrics.pause_count}",
-            title="🏁 Local Run Summary",
-            border_style="green" if res.status == JobStatus.COMPLETED else "red"
-        ))
+        console.print(
+            Panel(
+                f"[bold]Job ID:[/] {res.job_id}\n"
+                f"[bold]Status:[/] {format_status(res.status).markup}\n"
+                f"[bold]Exit Code:[/] {res.exit_code}\n"
+                f"[bold]Duration:[/] {res.metrics.duration_seconds:.2f}s\n"
+                f"[bold]Peak RAM:[/] {res.metrics.peak_ram_mb:.1f} MB\n"
+                f"[bold]Pause/Preempt Count:[/] {res.metrics.pause_count}",
+                title="🏁 Local Run Summary",
+                border_style="green" if res.status == JobStatus.COMPLETED else "red",
+            )
+        )
         return
 
     # Submit to Remote Dispatcher API
@@ -122,7 +116,7 @@ def submit_cmd(args):
         with Progress(
             SpinnerColumn(),
             TextColumn("[bold green]Uploading job bundle to Central Dispatcher..."),
-            console=console
+            console=console,
         ) as progress:
             progress.add_task("upload", total=None)
             files = {"bundle": (f"{entrypoint.stem}.zip", bundle_bytes, "application/zip")}
@@ -131,27 +125,31 @@ def submit_cmd(args):
         if response.status_code in (200, 201):
             data = response.json()
             job_id = data.get("job_id")
-            console.print(Panel(
-                f"[bold green]✓ Job successfully submitted to grid![/]\n\n"
-                f"[bold]Job ID:[/] [cyan]{job_id}[/]\n"
-                f"[bold]Job Name:[/] {data.get('job_name')}\n"
-                f"[bold]Initial Status:[/] {format_status(data.get('status', 'QUEUED')).markup}\n"
-                f"[bold]Assigned Node:[/] {data.get('assigned_node_id', 'Pending Dispatcher/Oracle routing')}\n\n"
-                f"[dim]Commands to monitor:\n"
-                f"  gridctl status {job_id}\n"
-                f"  gridctl logs {job_id} --follow\n"
-                f"  gridctl download {job_id}[/]",
-                title="🚀 Job Submission Confirmed",
-                border_style="bright_blue"
-            ))
+            console.print(
+                Panel(
+                    f"[bold green]✓ Job successfully submitted to grid![/]\n\n"
+                    f"[bold]Job ID:[/] [cyan]{job_id}[/]\n"
+                    f"[bold]Job Name:[/] {data.get('job_name')}\n"
+                    f"[bold]Initial Status:[/] {format_status(data.get('status', 'QUEUED')).markup}\n"
+                    f"[bold]Assigned Node:[/] {data.get('assigned_node_id', 'Pending Dispatcher/Oracle routing')}\n\n"
+                    f"[dim]Commands to monitor:\n"
+                    f"  gridctl status {job_id}\n"
+                    f"  gridctl logs {job_id} --follow\n"
+                    f"  gridctl download {job_id}[/]",
+                    title="🚀 Job Submission Confirmed",
+                    border_style="bright_blue",
+                )
+            )
 
             if args.follow:
                 follow_logs(job_id, endpoint)
         else:
             console.print(f"[bold red]API Error ({response.status_code}):[/] {response.text}")
-    except requests.RequestException as e:
+    except requests.RequestException:
         console.print(f"[bold red]Connection Error:[/] Could not connect to Dispatcher at {endpoint}.")
-        console.print(f"[yellow]Tip: Run with --local to execute locally, or start the dashboard/dispatcher server.[/]")
+        console.print(
+            "[yellow]Tip: Run with --local to execute locally, or start the dashboard/dispatcher server.[/]"
+        )
 
 
 def status_cmd(args):
@@ -223,7 +221,11 @@ def logs_cmd(args):
             r = requests.get(url, timeout=5)
             if r.status_code == 200:
                 logs = r.json().get("logs", "(no logs available)")
-                console.print(Panel(Syntax(logs, "python", theme="monokai", word_wrap=True), title=f"Logs: {args.job_id}"))
+                console.print(
+                    Panel(
+                        Syntax(logs, "python", theme="monokai", word_wrap=True), title=f"Logs: {args.job_id}"
+                    )
+                )
             else:
                 console.print(f"[bold red]Error fetching logs ({r.status_code}):[/] {r.text}")
         except requests.RequestException as e:
@@ -238,24 +240,24 @@ def download_cmd(args):
 
     try:
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[bold green]Downloading result artifacts bundle..."),
-            console=console
+            SpinnerColumn(), TextColumn("[bold green]Downloading result artifacts bundle..."), console=console
         ) as progress:
             progress.add_task("dl", total=None)
             r = requests.get(url, timeout=30)
 
         if r.status_code == 200:
             result = ResultUnpackager.extract_result_bundle(r.content, out_dir)
-            console.print(Panel(
-                f"[bold green]✓ Artifacts extracted successfully to:[/] [cyan]{out_dir.resolve()}[/]\n\n"
-                f"[bold]Job Status:[/] {format_status(result.status).markup}\n"
-                f"[bold]Exit Code:[/] {result.exit_code}\n"
-                f"[bold]Duration:[/] {result.metrics.duration_seconds:.2f}s\n"
-                f"[bold]Extracted Files:[/] {', '.join(result.artifact_files)}",
-                title="📦 Results Downloaded",
-                border_style="green"
-            ))
+            console.print(
+                Panel(
+                    f"[bold green]✓ Artifacts extracted successfully to:[/] [cyan]{out_dir.resolve()}[/]\n\n"
+                    f"[bold]Job Status:[/] {format_status(result.status).markup}\n"
+                    f"[bold]Exit Code:[/] {result.exit_code}\n"
+                    f"[bold]Duration:[/] {result.metrics.duration_seconds:.2f}s\n"
+                    f"[bold]Extracted Files:[/] {', '.join(result.artifact_files)}",
+                    title="📦 Results Downloaded",
+                    border_style="green",
+                )
+            )
         else:
             console.print(f"[bold red]Download failed ({r.status_code}):[/] {r.text}")
     except requests.RequestException as e:
@@ -282,7 +284,9 @@ def cluster_cmd(args):
 
             for n in nodes:
                 pred_sec = n.get("predicted_idle_window_seconds", 0)
-                pred_str = f"{pred_sec // 60:.0f}m {pred_sec % 60:.0f}s" if pred_sec > 0 else "0s (Active Host)"
+                pred_str = (
+                    f"{pred_sec // 60:.0f}m {pred_sec % 60:.0f}s" if pred_sec > 0 else "0s (Active Host)"
+                )
                 table.add_row(
                     n.get("node_id", "-"),
                     n.get("hostname", "-"),
@@ -290,7 +294,7 @@ def cluster_cmd(args):
                     f"{n.get('cpu_percent', 0):.1f}%",
                     f"{n.get('ram_used_mb', 0):.0f} / {n.get('ram_total_mb', 0):.0f} MB",
                     pred_str,
-                    n.get("current_job_id") or "[dim]idle[/]"
+                    n.get("current_job_id") or "[dim]idle[/]",
                 )
 
             console.print(table)
@@ -302,32 +306,30 @@ def cluster_cmd(args):
 
 def demo_run_cmd(args):
     """Executes a full interactive demo showcasing preemption, suspension, and result extraction."""
-    console.print(Panel.fit(
-        "[bold cyan]PREDICTIVE IDLE-COMPUTE SCHEDULER - ROLE 5 DEMO[/]\n"
-        "[dim]Simulating job packaging, sandboxed execution, instant host preemption, and artifact collection.[/]",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel.fit(
+            "[bold cyan]PREDICTIVE IDLE-COMPUTE SCHEDULER - ROLE 5 DEMO[/]\n"
+            "[dim]Simulating job packaging, sandboxed execution, instant host preemption, and artifact collection.[/]",
+            border_style="cyan",
+        )
+    )
 
     script_map = {
         "pi": EXAMPLE_JOBS_DIR / "monte_carlo_pi.py",
         "matrix": EXAMPLE_JOBS_DIR / "matrix_stress.py",
-        "ml": EXAMPLE_JOBS_DIR / "tabular_ml_train.py"
+        "ml": EXAMPLE_JOBS_DIR / "tabular_ml_train.py",
     }
 
     target_script = script_map.get(args.type, script_map["pi"])
     console.print(f"[bold green]1. Packaging target job:[/] [white]{target_script}[/]")
 
     bundle_bytes = JobPackager.create_bundle(
-        entrypoint_file=target_script,
-        job_name=f"demo_{args.type}",
-        estimated_runtime_sec=30
+        entrypoint_file=target_script, job_name=f"demo_{args.type}", estimated_runtime_sec=30
     )
-    console.print(f"   ✓ Bundle generated ({len(bundle_bytes)/1024:.1f} KB)")
+    console.print(f"   ✓ Bundle generated ({len(bundle_bytes) / 1024:.1f} KB)")
 
-    console.print(f"\n[bold green]2. Launching Worker Sandbox Executor...[/]")
-    runner = JobRunner(
-        log_callback=lambda st, text: sys.stdout.write(f"[NODE-OUT] {text}")
-    )
+    console.print("\n[bold green]2. Launching Worker Sandbox Executor...[/]")
+    runner = JobRunner(log_callback=lambda st, text: sys.stdout.write(f"[NODE-OUT] {text}"))
 
     runner.setup_workspace(bundle_bytes)
     runner.run_async()
@@ -335,45 +337,48 @@ def demo_run_cmd(args):
     # Wait 2 seconds of execution
     time.sleep(2.0)
 
-    console.print(f"\n[bold red]⚡ [SIMULATION EVENT] Laptop host moved mouse / launched game![/]")
-    console.print(f"[bold yellow]   Triggering instant preemption via psutil.Process.suspend()...[/]")
+    console.print("\n[bold red]⚡ [SIMULATION EVENT] Laptop host moved mouse / launched game![/]")
+    console.print("[bold yellow]   Triggering instant preemption via psutil.Process.suspend()...[/]")
     runner.pause()
     console.print(f"   ✓ Process paused! Host CPU freed immediately (Status: {runner.current_status})")
-    
+
     # Stay paused for 2.5 seconds to demonstrate
     time.sleep(2.5)
 
-    console.print(f"\n[bold green]⚡ [SIMULATION EVENT] Host is idle again (ML Oracle confirmed safe window).[/]")
-    console.print(f"[bold cyan]   Resuming process execution via psutil.Process.resume()...[/]")
+    console.print(
+        "\n[bold green]⚡ [SIMULATION EVENT] Host is idle again (ML Oracle confirmed safe window).[/]"
+    )
+    console.print("[bold cyan]   Resuming process execution via psutil.Process.resume()...[/]")
     runner.resume()
 
     # Wait for completion
     if runner.controller:
         runner.controller.wait()
 
-    res = runner.run_sync() # Harvests packaged results
-    
-    console.print(f"\n[bold green]3. Harvesting Output Artifacts...[/]")
+    res = runner.run_sync()  # Harvests packaged results
+
+    console.print("\n[bold green]3. Harvesting Output Artifacts...[/]")
     out_dir = Path(f"./demo_results/{res.job_id}")
     ResultUnpackager.extract_result_bundle(runner.workspace_dir / "result_bundle.zip", out_dir)
 
-    console.print(Panel(
-        f"[bold green]✓ Full Demonstration Run Complete![/]\n\n"
-        f"[bold]Job ID:[/] {res.job_id}\n"
-        f"[bold]Final Status:[/] {format_status(res.status).markup}\n"
-        f"[bold]Total Duration:[/] {res.metrics.duration_seconds:.2f}s\n"
-        f"[bold]Preemption Pauses:[/] {res.metrics.pause_count} (Total Paused: {res.metrics.total_pause_duration_sec:.2f}s)\n"
-        f"[bold]Peak RAM Sampled:[/] {res.metrics.peak_ram_mb:.1f} MB\n"
-        f"[bold]Artifacts Saved to:[/] {out_dir.resolve()}",
-        title="🎉 Demo Execution Complete",
-        border_style="green"
-    ))
+    console.print(
+        Panel(
+            f"[bold green]✓ Full Demonstration Run Complete![/]\n\n"
+            f"[bold]Job ID:[/] {res.job_id}\n"
+            f"[bold]Final Status:[/] {format_status(res.status).markup}\n"
+            f"[bold]Total Duration:[/] {res.metrics.duration_seconds:.2f}s\n"
+            f"[bold]Preemption Pauses:[/] {res.metrics.pause_count} (Total Paused: {res.metrics.total_pause_duration_sec:.2f}s)\n"
+            f"[bold]Peak RAM Sampled:[/] {res.metrics.peak_ram_mb:.1f} MB\n"
+            f"[bold]Artifacts Saved to:[/] {out_dir.resolve()}",
+            title="🎉 Demo Execution Complete",
+            border_style="green",
+        )
+    )
 
 
 def cli_main():
     parser = argparse.ArgumentParser(
-        prog="gridctl",
-        description="Predictive Idle-Compute Scheduler CLI (Role 5 Integration)"
+        prog="gridctl", description="Predictive Idle-Compute Scheduler CLI (Role 5 Integration)"
     )
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
 

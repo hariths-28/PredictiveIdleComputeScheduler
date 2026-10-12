@@ -3,6 +3,7 @@ import uuid
 import socket
 import os
 
+
 class NodeConfig:
     def __init__(
         self,
@@ -12,7 +13,7 @@ class NodeConfig:
         cpu_idle_threshold: float = 20.0,
         ram_idle_threshold: float = 80.0,
         user_inactivity_threshold_sec: int = 180,
-        log_level: str = "INFO"
+        log_level: str = "INFO",
     ):
         self.dispatcher_url = dispatcher_url
         self.node_id = node_id or self._generate_default_node_id()
@@ -46,7 +47,7 @@ class NodeConfig:
             cpu_idle_threshold=data.get("cpu_idle_threshold", 20.0),
             ram_idle_threshold=data.get("ram_idle_threshold", 80.0),
             user_inactivity_threshold_sec=data.get("user_inactivity_threshold_sec", 180),
-            log_level=data.get("log_level", "INFO")
+            log_level=data.get("log_level", "INFO"),
         )
 
     def to_dict(self) -> dict:
@@ -57,5 +58,5 @@ class NodeConfig:
             "cpu_idle_threshold": self.cpu_idle_threshold,
             "ram_idle_threshold": self.ram_idle_threshold,
             "user_inactivity_threshold_sec": self.user_inactivity_threshold_sec,
-            "log_level": self.log_level
+            "log_level": self.log_level,
         }

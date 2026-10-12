@@ -4,9 +4,9 @@ FastAPI application serving the REST API and the live Web Dashboard UI.
 
 import asyncio
 
-from typing import Optional, List
+from typing import Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -36,6 +36,7 @@ orchestrator = ClusterOrchestrator(workspace_root="./workspaces")
 
 # --- REST API ENDPOINTS ---
 
+
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard():
     """Renders the main glassmorphism dashboard page."""
@@ -62,10 +63,7 @@ async def toggle_node_host(node_id: str):
 
 
 @app.post("/api/jobs/submit")
-async def submit_job_bundle(
-    bundle: Optional[UploadFile] = File(None),
-    job_type: Optional[str] = Form(None)
-):
+async def submit_job_bundle(bundle: Optional[UploadFile] = File(None), job_type: Optional[str] = Form(None)):
     """
     Accepts either an uploaded .zip bundle from `gridctl submit`,
     or a preset `job_type` ('pi', 'matrix', 'ml') submitted from the Web UI.
@@ -76,16 +74,14 @@ async def submit_job_bundle(
         demo_map = {
             "pi": EXAMPLE_JOBS_DIR / "monte_carlo_pi.py",
             "matrix": EXAMPLE_JOBS_DIR / "matrix_stress.py",
-            "ml": EXAMPLE_JOBS_DIR / "tabular_ml_train.py"
+            "ml": EXAMPLE_JOBS_DIR / "tabular_ml_train.py",
         }
         script_path = demo_map.get(job_type)
         if not script_path or not script_path.exists():
             raise HTTPException(status_code=400, detail="Invalid job type or demo script missing")
-        
+
         bundle_bytes = JobPackager.create_bundle(
-            entrypoint_file=script_path,
-            job_name=f"WebDemo_{job_type.upper()}",
-            estimated_runtime_sec=20
+            entrypoint_file=script_path, job_name=f"WebDemo_{job_type.upper()}", estimated_runtime_sec=20
         )
     else:
         raise HTTPException(status_code=400, detail="Must provide either a zip bundle or a job_type")
@@ -125,11 +121,7 @@ async def download_job_artifacts(job_id: str):
     bundle_path = orchestrator.get_result_bundle_path(job_id)
     if not bundle_path or not bundle_path.exists():
         raise HTTPException(status_code=404, detail="Artifact bundle not ready or job incomplete")
-    return FileResponse(
-        path=str(bundle_path),
-        filename=f"result_{job_id}.zip",
-        media_type="application/zip"
-    )
+    return FileResponse(path=str(bundle_path), filename=f"result_{job_id}.zip", media_type="application/zip")
 
 
 @app.post("/api/jobs/{job_id}/pause")
@@ -152,6 +144,7 @@ async def cancel_job_endpoint(job_id: str):
 
 # --- WEBSOCKET TELEMETRY STREAM ---
 
+
 @app.websocket("/ws/telemetry")
 async def ws_telemetry(websocket: WebSocket):
     """Pushes real-time cluster state, active job status, and logs over WebSocket."""
@@ -161,10 +154,10 @@ async def ws_telemetry(websocket: WebSocket):
         while True:
             nodes_data = [n.model_dump() for n in orchestrator.get_nodes()]
             jobs_data = orchestrator.get_all_jobs()
-            
+
             # Find newest/active job logs
             active_logs = {}
-            for j in jobs_data[-3:]: # send logs for recent jobs
+            for j in jobs_data[-3:]:  # send logs for recent jobs
                 jid = j["job_id"]
                 active_logs[jid] = orchestrator.get_job_logs(jid)
 
@@ -172,7 +165,7 @@ async def ws_telemetry(websocket: WebSocket):
                 "nodes": nodes_data,
                 "jobs": jobs_data,
                 "logs": active_logs,
-                "timestamp": asyncio.get_event_loop().time()
+                "timestamp": asyncio.get_event_loop().time(),
             }
 
             await websocket.send_json(payload)

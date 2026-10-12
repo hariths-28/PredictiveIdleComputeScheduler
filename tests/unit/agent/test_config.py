@@ -4,6 +4,7 @@ import json
 import tempfile
 from idlegrid.agent.config import NodeConfig
 
+
 class TestNodeConfig(unittest.TestCase):
     def test_default_config(self):
         config = NodeConfig()
@@ -20,7 +21,7 @@ class TestNodeConfig(unittest.TestCase):
             "cpu_idle_threshold": 15.5,
             "ram_idle_threshold": 70.0,
             "user_inactivity_threshold_sec": 300,
-            "log_level": "DEBUG"
+            "log_level": "DEBUG",
         }
         with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as f:
             json.dump(sample_data, f)
@@ -37,6 +38,7 @@ class TestNodeConfig(unittest.TestCase):
             self.assertEqual(config.log_level, "DEBUG")
         finally:
             os.remove(temp_path)
+
 
 if __name__ == "__main__":
     unittest.main()
