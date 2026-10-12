@@ -29,7 +29,7 @@ from rich import print as rprint
 
 from idlegrid.packager.bundle import JobPackager, ResultUnpackager
 from idlegrid.executor.runner import JobRunner
-from idlegrid.common.legacy import JobStatus, NodeStatus
+from idlegrid.common.models import JobStatus, NodeStatus
 from idlegrid.common.paths import EXAMPLE_JOBS_DIR
 
 console = Console(legacy_windows=False)
@@ -61,7 +61,7 @@ def format_node_status(status_str: str) -> Text:
         return Text("🟡 IDLE (RISKY)", style="bold yellow")
     elif status_str == "HOST_ACTIVE":
         return Text("🔴 HOST ACTIVE", style="bold red")
-    elif status_str == "BUSY":
+    elif status_str == "RUNNING_JOB":
         return Text("⚡ BUSY COMPUTING", style="bold cyan")
     return Text(f"⚪ {status_str}", style="dim")
 

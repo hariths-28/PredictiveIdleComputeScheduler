@@ -10,7 +10,7 @@ import threading
 from pathlib import Path
 from typing import Optional, Callable, Union, Dict
 
-from idlegrid.common.legacy import JobManifest, JobResult, JobStatus, ExecutionMetrics
+from idlegrid.common.models import JobManifest, JobResult, JobStatus, ExecutionMetrics
 from idlegrid.packager.bundle import JobUnpackager, ResultPackager
 from idlegrid.executor.process_controller import ProcessController
 

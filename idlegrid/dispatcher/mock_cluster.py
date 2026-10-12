@@ -11,8 +11,8 @@ import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable
 
-from idlegrid.common.legacy import (
-    NodeTelemetry,
+from idlegrid.common.legacy import NodeTelemetry
+from idlegrid.common.models import (
     NodeStatus,
     JobManifest,
     JobResult,
@@ -118,7 +118,7 @@ class ClusterOrchestrator:
                         node.idle_time_seconds = 0
                         node.is_user_active = True
                         node.predicted_idle_window_seconds = 0
-                    elif node.status == NodeStatus.BUSY:
+                    elif node.status == NodeStatus.RUNNING_JOB:
                         node.cpu_percent = round(random.uniform(60.0, 95.0), 1)
                         node.idle_time_seconds += 2
                         node.is_user_active = False
@@ -225,7 +225,7 @@ class ClusterOrchestrator:
     def _start_job_on_node(self, job_id: str, bundle_bytes: bytes, node_id: str):
         """Dispatches job to target node runner."""
         node = self.nodes[node_id]
-        node.status = NodeStatus.BUSY
+        node.status = NodeStatus.RUNNING_JOB
         node.current_job_id = job_id
 
         self.jobs[job_id]["status"] = JobStatus.RUNNING

@@ -67,7 +67,7 @@ function renderClusterNodes(nodes) {
     container.innerHTML = nodes.map(node => {
         const isSafe = node.status === "IDLE_SAFE";
         const isActive = node.status === "HOST_ACTIVE";
-        const isBusy = node.status === "BUSY";
+        const isBusy = node.status === "RUNNING_JOB";
 
         let cardClass = "idle-safe";
         let badgeClass = "badge-idle-safe";

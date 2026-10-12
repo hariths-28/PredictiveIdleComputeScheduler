@@ -1,24 +1,33 @@
 """
-Common data models and contracts shared across executor, CLI, dispatcher, and agents.
+Shared contracts used by every IdleGrid component (PRD Appendix A).
+Import from idlegrid.common.models; see docs/contract.md before changing anything.
 """
-from idlegrid.common.legacy import (
-    JobStatus,
-    NodeStatus,
+from idlegrid.common.models import (
+    SCHEMA_VERSION,
+    AttemptStatus,
+    CommandType,
+    ExecutionMetrics,
+    HostState,
+    InputDetection,
+    JobKind,
     JobManifest,
     JobResult,
-    NodeTelemetry,
-    NodeInfo,
-    JobSubmissionRequest,
-    ExecutionMetrics
+    JobStatus,
+    NodeStatus,
+    StudyStatus,
 )
 
 __all__ = [
-    "JobStatus",
-    "NodeStatus",
+    "SCHEMA_VERSION",
+    "AttemptStatus",
+    "CommandType",
+    "ExecutionMetrics",
+    "HostState",
+    "InputDetection",
+    "JobKind",
     "JobManifest",
     "JobResult",
-    "NodeTelemetry",
-    "NodeInfo",
-    "JobSubmissionRequest",
-    "ExecutionMetrics"
+    "JobStatus",
+    "NodeStatus",
+    "StudyStatus",
 ]

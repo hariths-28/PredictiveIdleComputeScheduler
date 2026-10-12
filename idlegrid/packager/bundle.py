@@ -14,7 +14,7 @@ from typing import List, Optional, Dict, Union
 import uuid
 import time
 
-from idlegrid.common.legacy import JobManifest, JobResult, JobStatus, ExecutionMetrics
+from idlegrid.common.models import JobManifest, JobResult, JobStatus, ExecutionMetrics
 
 
 class JobPackager:

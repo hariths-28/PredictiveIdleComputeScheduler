@@ -9,7 +9,7 @@ from pathlib import Path
 
 from idlegrid.packager.bundle import JobPackager
 from idlegrid.executor.runner import JobRunner
-from idlegrid.common.legacy import JobStatus
+from idlegrid.common.models import JobStatus
 
 
 def test_job_runner_sync_execution():
