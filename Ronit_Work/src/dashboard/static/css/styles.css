@@ -286,11 +286,27 @@ body {
 .node-card.idle-safe {
     border-left: 4px solid var(--emerald);
 }
+.node-card.idle-risky {
+    border-left: 4px solid var(--amber);
+}
 .node-card.host-active {
     border-left: 4px solid var(--rose);
 }
+.node-card.host-busy {
+    border-left: 4px solid #f97316;
+}
 .node-card.busy {
     border-left: 4px solid var(--primary);
+}
+.node-card.draining {
+    border-left: 4px solid #fbbf24;
+}
+.node-card.unschedulable {
+    border-left: 4px solid #ef4444;
+}
+.node-card.offline {
+    border-left: 4px solid var(--text-muted);
+    opacity: 0.65;
 }
 
 .node-top {
@@ -324,15 +340,52 @@ body {
     color: #34d399;
     border: 1px solid var(--emerald-glow);
 }
+.badge-idle-risky {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+}
 .badge-host-active {
     background: rgba(244, 63, 94, 0.2);
     color: #fb7185;
     border: 1px solid var(--rose-glow);
 }
+.badge-host-busy {
+    background: rgba(249, 115, 22, 0.2);
+    color: #fb923c;
+    border: 1px solid rgba(249, 115, 22, 0.4);
+}
 .badge-busy {
     background: rgba(56, 189, 248, 0.2);
     color: #38bdf8;
     border: 1px solid var(--primary-glow);
+}
+.badge-draining {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fde047;
+    border: 1px solid rgba(251, 191, 36, 0.4);
+}
+.badge-unschedulable {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+.badge-offline {
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.4);
+}
+
+.real-laptop-pill {
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
 }
 
 /* Metric Bars */
@@ -561,6 +614,14 @@ body {
 .status-completed {
     background: rgba(16, 185, 129, 0.2);
     color: #10b981;
+}
+.status-timed-out {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+.status-cancelled {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
 }
 .status-failed {
     background: rgba(244, 63, 94, 0.2);

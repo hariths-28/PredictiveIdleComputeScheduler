@@ -14,8 +14,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from typing import Optional, List
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect
+import time
+from typing import Optional, List, Dict, Any
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect, Request, Body
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +49,28 @@ orchestrator = ClusterOrchestrator(workspace_root="./workspaces")
 
 
 # --- REST API ENDPOINTS ---
+
+@app.get("/healthz")
+def healthz():
+    """Liveness check used by network test."""
+    return {
+        "status": "ok",
+        "service": "idlegrid-dispatcher",
+        "version": "1.0.0",
+        "nodes": len(orchestrator.get_nodes()),
+    }
+
+
+@app.post("/api/v1/heartbeat")
+def agent_heartbeat(request: Request, payload: Dict[str, Any] = Body(...)):
+    """Review 1 demo bridge: register a real laptop from a node-agent heartbeat."""
+    if not payload.get("node_id") or not isinstance(payload.get("metrics"), dict):
+        raise HTTPException(status_code=422, detail="heartbeat needs node_id and a metrics object")
+    client_ip = request.client.host if request.client else "unknown"
+    node = orchestrator.register_heartbeat(payload, client_ip)
+    node_st = getattr(node.status, "value", str(node.status))
+    return {"status": "ok", "node_status": node_st, "server_time": time.time()}
+
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard():

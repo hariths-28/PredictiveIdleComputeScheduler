@@ -41,8 +41,11 @@ console = Console(legacy_windows=False)
 DEFAULT_ENDPOINT = "http://localhost:8000"
 
 
-def format_status(status_str: str) -> Text:
-    status_str = str(status_str).upper()
+def format_status(status) -> Text:
+    val = getattr(status, "value", str(status))
+    status_str = str(val).upper()
+    if status_str.startswith("JOBSTATUS."):
+        status_str = status_str.split(".", 1)[1]
     if status_str in ("COMPLETED", "SUCCESS"):
         return Text(f"● {status_str}", style="bold green")
     elif status_str in ("RUNNING", "RESUMING"):
@@ -51,6 +54,8 @@ def format_status(status_str: str) -> Text:
         return Text(f"⏸ {status_str}", style="bold yellow")
     elif status_str in ("QUEUED", "ASSIGNED"):
         return Text(f"⏳ {status_str}", style="bold blue")
+    elif status_str in ("TIMED_OUT", "TIMEOUT"):
+        return Text(f"⏰ {status_str}", style="bold red")
     elif status_str in ("FAILED", "ERROR"):
         return Text(f"✖ {status_str}", style="bold red")
     elif status_str in ("CANCELLED",):
@@ -58,16 +63,27 @@ def format_status(status_str: str) -> Text:
     return Text(status_str, style="white")
 
 
-def format_node_status(status_str: str) -> Text:
-    status_str = str(status_str).upper()
+def format_node_status(status) -> Text:
+    val = getattr(status, "value", str(status))
+    status_str = str(val).upper()
+    if status_str.startswith("NODESTATUS."):
+        status_str = status_str.split(".", 1)[1]
     if status_str == "IDLE_SAFE":
         return Text("🟢 IDLE (SAFE)", style="bold green")
     elif status_str == "IDLE_RISKY":
         return Text("🟡 IDLE (RISKY)", style="bold yellow")
     elif status_str == "HOST_ACTIVE":
         return Text("🔴 HOST ACTIVE", style="bold red")
-    elif status_str == "BUSY":
-        return Text("⚡ BUSY COMPUTING", style="bold cyan")
+    elif status_str == "HOST_BUSY":
+        return Text("🟠 HOST BUSY", style="bold yellow")
+    elif status_str in ("BUSY", "RUNNING_JOB"):
+        return Text("⚡ RUNNING JOB", style="bold cyan")
+    elif status_str == "DRAINING":
+        return Text("🔶 DRAINING", style="bold yellow")
+    elif status_str == "UNSCHEDULABLE":
+        return Text("⛔ UNSCHEDULABLE", style="bold red")
+    elif status_str == "OFFLINE":
+        return Text("⚪ OFFLINE", style="dim")
     return Text(f"⚪ {status_str}", style="dim")
 
 
@@ -343,7 +359,8 @@ def demo_run_cmd(args):
     console.print(f"\n[bold red]⚡ [SIMULATION EVENT] Laptop host moved mouse / launched game![/]")
     console.print(f"[bold yellow]   Triggering instant preemption via psutil.Process.suspend()...[/]")
     runner.pause()
-    console.print(f"   ✓ Process paused! Host CPU freed immediately (Status: {runner.current_status})")
+    curr_st = getattr(runner.current_status, "value", str(runner.current_status))
+    console.print(f"   ✓ Process paused! Host CPU freed immediately (Status: {curr_st})")
     
     # Stay paused for 2.5 seconds to demonstrate
     time.sleep(2.5)
@@ -352,11 +369,10 @@ def demo_run_cmd(args):
     console.print(f"[bold cyan]   Resuming process execution via psutil.Process.resume()...[/]")
     runner.resume()
 
-    # Wait for completion
-    if runner.controller:
-        runner.controller.wait()
-
-    res = runner.run_sync() # Harvests packaged results
+    # Wait for completion of the running job (fixes R1: do not call run_sync again!)
+    res = runner.wait()
+    if res is None:
+        res = runner.job_result
     
     console.print(f"\n[bold green]3. Harvesting Output Artifacts...[/]")
     out_dir = Path(f"./demo_results/{res.job_id}")

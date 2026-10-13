@@ -52,6 +52,11 @@ class ProcessController:
         self._stderr_lines: List[str] = []
 
         self._pause_start_time: Optional[float] = None
+        self._pause_start_monotonic: Optional[float] = None
+        self._paused_total_monotonic: float = 0.0
+        self._started_monotonic: Optional[float] = None
+        self._timed_out: bool = False
+        self._cancel_requested: bool = False
         self._is_paused = False
         self._monitor_thread: Optional[threading.Thread] = None
         self._metric_thread: Optional[threading.Thread] = None
@@ -69,10 +74,23 @@ class ProcessController:
             except Exception as e:
                 logger.error(f"Error in status callback: {e}")
 
+    def active_seconds(self) -> float:
+        """Returns the actual compute execution time in seconds, excluding any paused time."""
+        if self._started_monotonic is None:
+            return 0.0
+        now = time.monotonic()
+        paused_now = (now - self._pause_start_monotonic) if self._is_paused and self._pause_start_monotonic is not None else 0.0
+        return max(0.0, (now - self._started_monotonic) - self._paused_total_monotonic - paused_now)
+
     def start(self) -> bool:
         """Launches the process in the workspace directory."""
         try:
             self.metrics.start_time = time.time()
+            self._started_monotonic = time.monotonic()
+            self._paused_total_monotonic = 0.0
+            self._pause_start_monotonic = None
+            self._timed_out = False
+            self._cancel_requested = False
             self._update_status(JobStatus.RUNNING)
 
             # Ensure logs directory exists
@@ -183,6 +201,7 @@ class ProcessController:
 
             self._is_paused = True
             self._pause_start_time = time.time()
+            self._pause_start_monotonic = time.monotonic()
             self.metrics.pause_count += 1
             self._update_status(JobStatus.PAUSED)
             
@@ -210,6 +229,11 @@ class ProcessController:
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     pass
 
+            if self._pause_start_monotonic is not None:
+                pause_duration_mono = time.monotonic() - self._pause_start_monotonic
+                self._paused_total_monotonic += pause_duration_mono
+                self._pause_start_monotonic = None
+
             if self._pause_start_time:
                 pause_duration = time.time() - self._pause_start_time
                 self.metrics.total_pause_duration_sec += pause_duration
@@ -228,6 +252,7 @@ class ProcessController:
 
     def terminate(self, force: bool = False):
         """Terminates or kills the process tree."""
+        self._cancel_requested = True
         self._stop_requested.set()
         if not self.psutil_proc:
             return
@@ -235,7 +260,16 @@ class ProcessController:
         try:
             # If paused, resume first so it can receive signals properly
             if self._is_paused:
-                self.resume()
+                try:
+                    self.psutil_proc.resume()
+                    for child in self.psutil_proc.children(recursive=True):
+                        try:
+                            child.resume()
+                        except (psutil.NoSuchProcess, psutil.AccessDenied):
+                            pass
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+                self._is_paused = False
 
             children = []
             try:
@@ -257,23 +291,34 @@ class ProcessController:
             else:
                 self.psutil_proc.terminate()
 
-            self._update_status(JobStatus.CANCELLED)
+            if not self._timed_out:
+                self._update_status(JobStatus.CANCELLED)
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
         except Exception as e:
             logger.error(f"Error terminating process: {e}")
 
     def wait(self, timeout: Optional[float] = None) -> int:
-        """Waits for process completion and updates final status and metrics."""
+        """Waits for process completion using active execution time for timeouts."""
         if not self.process:
             return -1
 
-        try:
-            self._exit_code = self.process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            logger.warning("Job timed out. Terminating...")
-            self.terminate(force=True)
-            self._exit_code = -9
+        while (rc := self.process.poll()) is None:
+            if timeout is not None and self.active_seconds() > timeout:
+                logger.warning(
+                    f"Job active execution time ({self.active_seconds():.2f}s) exceeded timeout ({timeout}s). Terminating..."
+                )
+                self._timed_out = True
+                self.terminate(force=True)
+                try:
+                    self._exit_code = self.process.wait(timeout=2.0)
+                except subprocess.TimeoutExpired:
+                    self._exit_code = -9
+                break
+            time.sleep(0.05)
+
+        if not self._timed_out:
+            self._exit_code = self.process.poll() if self.process.poll() is not None else 0
 
         self._stop_requested.set()
 
@@ -289,9 +334,13 @@ class ProcessController:
         if self.metrics.start_time:
             self.metrics.duration_seconds = self.metrics.end_time - self.metrics.start_time
 
-        if self._exit_code == 0:
+        if self._exit_code == 0 and not self._timed_out and not self._cancel_requested:
             self._update_status(JobStatus.COMPLETED)
-        elif self.status != JobStatus.CANCELLED:
+        elif self._timed_out:
+            self._update_status(JobStatus.TIMED_OUT)
+        elif self._cancel_requested or self.status == JobStatus.CANCELLED:
+            self._update_status(JobStatus.CANCELLED)
+        else:
             self._update_status(JobStatus.FAILED)
 
         return self._exit_code

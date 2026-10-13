@@ -20,14 +20,19 @@ class JobStatus(str, Enum):
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
     PREEMPTED_MIGRATING = "PREEMPTED_MIGRATING"
+    TIMED_OUT = "TIMED_OUT"
 
 
 class NodeStatus(str, Enum):
     IDLE_SAFE = "IDLE_SAFE"         # Idle with high ML confidence for long window
     IDLE_RISKY = "IDLE_RISKY"       # Idle but short predicted window (only small micro-jobs)
     HOST_ACTIVE = "HOST_ACTIVE"     # Host is using the laptop (mouse/keyboard/high CPU)
-    BUSY = "BUSY"                   # Currently running a grid job
+    HOST_BUSY = "HOST_BUSY"         # Host is busy running own software
+    RUNNING_JOB = "RUNNING_JOB"     # Currently running a grid job
+    BUSY = "BUSY"                   # Backwards compatibility alias for RUNNING_JOB
     OFFLINE = "OFFLINE"
+    DRAINING = "DRAINING"
+    UNSCHEDULABLE = "UNSCHEDULABLE"
 
 
 class JobManifest(BaseModel):
@@ -86,6 +91,8 @@ class NodeTelemetry(BaseModel):
     status: NodeStatus = NodeStatus.IDLE_SAFE
     current_job_id: Optional[str] = None
     timestamp: float = Field(default_factory=time.time)
+    source: str = "sim"
+    os_name: Optional[str] = None
 
 
 class NodeInfo(BaseModel):

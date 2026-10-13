@@ -66,8 +66,14 @@ function renderClusterNodes(nodes) {
 
     container.innerHTML = nodes.map(node => {
         const isSafe = node.status === "IDLE_SAFE";
+        const isRisky = node.status === "IDLE_RISKY";
         const isActive = node.status === "HOST_ACTIVE";
-        const isBusy = node.status === "BUSY";
+        const isHostBusy = node.status === "HOST_BUSY";
+        const isBusy = node.status === "BUSY" || node.status === "RUNNING_JOB";
+        const isDraining = node.status === "DRAINING";
+        const isUnschedulable = node.status === "UNSCHEDULABLE";
+        const isOffline = node.status === "OFFLINE";
+        const isReal = node.source === "agent";
 
         let cardClass = "idle-safe";
         let badgeClass = "badge-idle-safe";
@@ -79,15 +85,50 @@ function renderClusterNodes(nodes) {
             badgeClass = "badge-host-active";
             statusText = "🔴 HOST ACTIVE";
             oracleHint = `⚠️ <strong>Host Typing:</strong> Preempted (0m window)`;
+        } else if (isHostBusy) {
+            cardClass = "host-busy";
+            badgeClass = "badge-host-busy";
+            statusText = "🟠 HOST BUSY";
+            oracleHint = `⚡ <strong>Owner Apps Active:</strong> CPU/RAM in use`;
         } else if (isBusy) {
             cardClass = "busy";
             badgeClass = "badge-busy";
-            statusText = "⚡ BUSY COMPUTING";
+            statusText = "⚡ RUNNING JOB";
             oracleHint = `⚙️ Running: <code>${node.current_job_id || 'Job'}</code>`;
+        } else if (isRisky) {
+            cardClass = "idle-risky";
+            badgeClass = "badge-idle-risky";
+            statusText = "🟡 IDLE (RISKY)";
+            oracleHint = isReal ? `💻 Live agent reporting (prediction in Phase 3)` : `⚠️ <strong>Short Window:</strong> Micro-jobs only`;
+        } else if (isDraining) {
+            cardClass = "draining";
+            badgeClass = "badge-draining";
+            statusText = "🔶 DRAINING";
+            oracleHint = `Finishing running job, not accepting new`;
+        } else if (isUnschedulable) {
+            cardClass = "unschedulable";
+            badgeClass = "badge-unschedulable";
+            statusText = "⛔ UNSCHEDULABLE";
+            oracleHint = `Input unknown or AC power required`;
+        } else if (isOffline) {
+            cardClass = "offline";
+            badgeClass = "badge-offline";
+            statusText = "⚪ OFFLINE";
+            oracleHint = `Node unreachable (silent > 15s)`;
         }
 
-        const btnText = isActive ? "💤 Host Went Idle" : "🎮 Simulate Host Moved Mouse";
-        const btnIcon = isActive ? "💤" : "🖱️";
+        let buttonHtml = '';
+        if (isReal) {
+            buttonHtml = `<div class="real-laptop-pill">💻 Live Team Laptop (${node.os_name || 'Agent'})</div>`;
+        } else {
+            const btnText = isActive ? "💤 Host Went Idle" : "🎮 Simulate Host Moved Mouse";
+            const btnIcon = isActive ? "💤" : "🖱️";
+            buttonHtml = `
+                <button class="btn-toggle-host" onclick="toggleHostActivity('${node.node_id}')">
+                    ${btnIcon} ${btnText}
+                </button>
+            `;
+        }
 
         return `
             <div class="node-card ${cardClass}">
@@ -127,10 +168,8 @@ function renderClusterNodes(nodes) {
                     <span class="oracle-text">${oracleHint}</span>
                 </div>
 
-                <!-- Preemption Simulation Button -->
-                <button class="btn-toggle-host" onclick="toggleHostActivity('${node.node_id}')">
-                    ${btnIcon} ${btnText}
-                </button>
+                <!-- Action Button or Real Laptop Status -->
+                ${buttonHtml}
             </div>
         `;
     }).join("");
@@ -151,6 +190,8 @@ function renderJobsTable(jobs) {
         if (st === "RUNNING") pillClass = "status-running";
         else if (st === "PAUSED") pillClass = "status-paused";
         else if (st === "COMPLETED") pillClass = "status-completed";
+        else if (st === "TIMED_OUT") pillClass = "status-timed-out";
+        else if (st === "CANCELLED") pillClass = "status-cancelled";
         else if (st === "FAILED") pillClass = "status-failed";
 
         const assignedText = job.assigned_hostname || job.assigned_node_id || "Routing...";

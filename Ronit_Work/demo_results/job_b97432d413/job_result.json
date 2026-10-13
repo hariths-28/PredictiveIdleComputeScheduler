@@ -1,0 +1,42 @@
+{
+  "job_id": "job_b97432d413",
+  "status": "COMPLETED",
+  "exit_code": 0,
+  "stdout": "DEMO RUNNING\n",
+  "stderr": "",
+  "metrics": {
+    "start_time": 1791829552.3867717,
+    "end_time": 1791829552.5765831,
+    "duration_seconds": 0.18981146812438965,
+    "cpu_percent_samples": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ram_mb_samples": [
+      2.078125,
+      3.27734375,
+      7.8046875,
+      8.8671875,
+      9.2421875,
+      10.203125,
+      10.51953125,
+      10.62890625
+    ],
+    "peak_cpu_percent": 0.0,
+    "peak_ram_mb": 10.62890625,
+    "pause_count": 0,
+    "total_pause_duration_sec": 0.0
+  },
+  "artifact_files": [
+    "logs/stdout.log",
+    "logs/stderr.log"
+  ],
+  "error_message": null,
+  "completed_at": 1791829552.5765972
+}
