@@ -25,6 +25,13 @@ class TestMetricsCollector(unittest.TestCase):
         self.assertIn("ram_usage_percent", metrics)
         self.assertIn("ram_available_mb", metrics)
         self.assertIn("user_inactivity_sec", metrics)
+        # Verify ML Oracle & Telemetry keys
+        self.assertIn("cpu_pct", metrics)
+        self.assertIn("ram_pct", metrics)
+        self.assertIn("battery_charging", metrics)
+        self.assertIn("battery_pct", metrics)
+        self.assertIn("mouse_events_last_min", metrics)
+        self.assertIn("key_events_last_min", metrics)
 
     def test_determine_node_state_idle(self):
         # Low CPU (5%), Low RAM (30%), Inactivity > threshold (200s)
