@@ -1,0 +1,15 @@
+{
+  "job_id": "job_654d504c29",
+  "job_name": "demo_pi",
+  "entrypoint": "mock_demo.py",
+  "args": [],
+  "created_at": 1791829631.3182132,
+  "timeout_seconds": 1800,
+  "estimated_runtime_sec": 30,
+  "requirements": null,
+  "env_vars": {},
+  "files": [
+    "mock_demo.py"
+  ],
+  "user_id": "user_default"
+}

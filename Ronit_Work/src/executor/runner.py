@@ -108,9 +108,7 @@ class JobRunner:
 
         exit_code = self.controller.wait(timeout=self.manifest.timeout_seconds)
 
-        status = JobStatus.COMPLETED if exit_code == 0 else (
-            JobStatus.CANCELLED if self.controller.status == JobStatus.CANCELLED else JobStatus.FAILED
-        )
+        status = self.controller.status
 
         self.job_result = JobResult(
             job_id=self.manifest.job_id,
